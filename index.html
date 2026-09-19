@@ -145,10 +145,8 @@ input:focus,select:focus{outline:2px solid var(--ink);outline-offset:-1px;border
 .hint{font-size:11px;color:var(--muted);line-height:1.45;margin:8px 0 0}
 
 /* chart */
-.chart-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
-  margin-bottom:3px;flex-wrap:wrap}
-.chart-title{font-family:var(--sans);font-size:16.5px;font-weight:700;letter-spacing:-.014em;margin:0}
-.chart-sub{font-size:12.5px;color:var(--muted);margin:0 0 6px;line-height:1.45}
+.chart-head{display:flex;align-items:baseline;justify-content:flex-end;gap:12px;
+  margin-bottom:4px;flex-wrap:wrap}
 .scaletog{display:inline-flex;gap:2px;background:var(--surface-2);border:1px solid var(--line);
   border-radius:7px;padding:2px}
 .scaletog button{font:inherit;font-size:12.5px;font-weight:500;color:var(--ink-2);background:none;
@@ -256,13 +254,11 @@ footer a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-ra
   <div class="layout">
     <section class="panel main">
       <div class="chart-head">
-        <h2 class="chart-title" id="chartTitle">Simulated saturation binding</h2>
         <div class="scaletog" role="group" aria-label="X axis scale">
           <button id="scaleLog" aria-pressed="true">Log x</button>
           <button id="scaleLin" aria-pressed="false">Linear x</button>
         </div>
       </div>
-      <p class="chart-sub" id="chartSub"></p>
 
       <svg class="plot" id="plot" viewBox="0 0 860 380" role="img" aria-label="Simulated binding data with fitted curves"></svg>
 
@@ -873,12 +869,14 @@ function renderResults(){
     thead.innerHTML = '';
     tbody.innerHTML = '<tr><td colspan="8" style="color:var(--muted);font-family:var(--sans)">' +
       'Switch on a ligand to simulate an experiment.</td></tr>';
+    document.getElementById('tnote').innerHTML = '';
     return;
   }
   if (!state.fitSpecific && !state.fitQuadratic){
     thead.innerHTML = '';
     tbody.innerHTML = '<tr><td colspan="8" style="color:var(--muted);font-family:var(--sans)">' +
       'Choose at least one model to fit. The simulated data are plotted above.</td></tr>';
+    document.getElementById('tnote').innerHTML = dataCaption();
     return;
   }
 
@@ -914,6 +912,7 @@ function renderResults(){
   });
   tbody.innerHTML = rows;
   document.getElementById('tnote').innerHTML =
+    dataCaption() +
     (showHalf
       ? 'The Hill model is fitted as f = L<sup>n</sup>/(K + L<sup>n</sup>), so its raw K has units of ' + u +
         '<sup>n</sup> and is not a K<sub>d</sub>. K<sup>1/n</sup> is the concentration at half saturation \u2014 ' +
@@ -926,8 +925,9 @@ function renderResults(){
     'least-squares surface at the optimum.';
 }
 
-function renderChrome(){
-  var sub = document.getElementById('chartSub'), key = document.getElementById('keyline');
+// What the plotted points are and which models were fitted. This used to sit
+// above the chart; it now opens the note under the results table.
+function dataCaption(){
   var bits = [];
   if (state.fitSpecific) bits.push(state.fitHill ? 'the Hill model' : 'specific binding with n fixed at 1');
   if (state.fitQuadratic) bits.push('quadratic 1:1');
@@ -938,8 +938,12 @@ function renderChrome(){
       : Math.min.apply(null, reps) === 1
         ? 'Points are replicate means with ±1 SD bars; a single measurement gets no bar. '
         : 'Points are replicate means with ±1 SD bars. ';
-  sub.innerHTML = lead +
-    (bits.length ? 'Fitted with ' + bits.join(' and ') + '.' : 'No model selected — data only.');
+  return lead +
+    (bits.length ? 'Fitted with ' + bits.join(' and ') + '. ' : 'No model selected — data only. ');
+}
+
+function renderChrome(){
+  var key = document.getElementById('keyline');
 
   key.innerHTML =
     '<i><span class="dotmark"></span>mean ± SD</i>' +
