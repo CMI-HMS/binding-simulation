@@ -182,8 +182,15 @@ input:focus,select:focus{outline:2px solid var(--ink);outline-offset:-1px;border
 .hint{font-size:10.5px;color:var(--muted);line-height:1.4;margin:7px 0 0}
 
 /* chart */
-.chart-head{display:flex;align-items:baseline;justify-content:flex-end;gap:12px;
+.chart-head{display:flex;align-items:center;justify-content:flex-end;gap:10px;
   margin-bottom:4px;flex-wrap:wrap}
+.export{margin-right:auto;display:inline-flex;align-items:center;gap:7px}
+.export button{font:inherit;font-size:12px;color:var(--ink-2);background:var(--surface-2);
+  border:1px solid var(--line);border-radius:7px;padding:4px 10px;cursor:pointer}
+.export button:hover{border-color:var(--line-2);color:var(--ink)}
+.export button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.export .said{font-size:11.5px;color:var(--muted);opacity:0;transition:opacity .15s}
+.export .said.on{opacity:1}
 .scaletog{display:inline-flex;gap:2px;background:var(--surface-2);border:1px solid var(--line);
   border-radius:7px;padding:2px}
 .scaletog button{font:inherit;font-size:12.5px;font-weight:500;color:var(--ink-2);background:none;
@@ -332,6 +339,10 @@ footer a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-ra
 
     <section class="panel main">
       <div class="chart-head">
+        <div class="export">
+          <button id="csvCopy" title="Copy the simulated points to the clipboard, ready to paste into a spreadsheet">Copy simulated data</button>
+          <span class="said" id="csvSaid" role="status" aria-live="polite"></span>
+        </div>
         <div class="scaletog" role="group" aria-label="X axis scale">
           <button id="scaleLog" aria-pressed="true">Log x</button>
           <button id="scaleLin" aria-pressed="false">Linear x</button>
@@ -1260,6 +1271,85 @@ document.getElementById('npts').addEventListener('blur', function(){
 });
 document.getElementById('scaleLog').addEventListener('click', function(){ state.scale = 'log'; redraw(); });
 document.getElementById('scaleLin').addEventListener('click', function(){ state.scale = 'linear'; redraw(); });
+
+// ---- export ---------------------------------------------------------------
+// A wide table, laid out the way a spreadsheet wants it: concentration down the
+// first column, then one column per ligand per replicate. Ligands with their
+// own concentration range contribute their own rows, so a cell is blank where
+// that ligand was never measured rather than borrowing a neighbour's point.
+function sig(v, d){
+  if (v === null || v === undefined || !isFinite(v)) return '';
+  if (v === 0) return '0';
+  return String(parseFloat(Number(v).toPrecision(d || 6)));
+}
+
+function dataTable(){
+  var c = cache || build(), u = state.unit;
+  var xs = [], seen = {}, cols = [], head = ['[L]T (' + u + ')'];
+  var key = function(x){ return sig(x, 10); };
+
+  c.groups.forEach(function(g){
+    var reps = Math.max(1, Math.round(num(g.L.reps, 3)));
+    g.sim.pts.forEach(function(P){
+      var k = key(P.x);
+      if (!(k in seen)){ seen[k] = 1; xs.push(P.x); }
+    });
+    for (var r = 0; r < reps; r++){
+      var col = {};
+      g.sim.pts.forEach(function(P, i){
+        var raw = g.sim.raw[i * reps + r];
+        if (raw) col[key(P.x)] = raw.y;
+      });
+      cols.push(col);
+      head.push(reps > 1 ? g.name + ' rep ' + (r + 1) : g.name);
+    }
+  });
+
+  xs.sort(function(a, b){ return a - b; });
+  return [head].concat(xs.map(function(x){
+    var k = key(x);
+    return [sig(x)].concat(cols.map(function(col){
+      return k in col ? sig(col[k]) : '';
+    }));
+  }));
+}
+
+// Tab-separated: that is what lands in a cell grid when pasted.
+function tsv(){
+  return dataTable().map(function(row){
+    return row.map(function(v){ return String(v).replace(/\t/g, ' '); }).join('\t');
+  }).join('\r\n') + '\r\n';
+}
+
+function said(msg){
+  var el = document.getElementById('csvSaid');
+  el.textContent = msg;
+  el.classList.add('on');
+  clearTimeout(said.t);
+  said.t = setTimeout(function(){ el.classList.remove('on'); }, 2600);
+}
+
+function copyFallback(text){
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+  document.body.appendChild(ta);
+  ta.select();
+  var ok = false;
+  try { ok = document.execCommand('copy'); } catch (e){ ok = false; }
+  document.body.removeChild(ta);
+  said(ok ? 'copied' : 'could not copy here');
+}
+
+document.getElementById('csvCopy').addEventListener('click', function(){
+  if (!cache || !cache.groups.length){ said('no ligands switched on'); return; }
+  var text = tsv();
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){ said('copied'); },
+      function(){ copyFallback(text); });
+  } else copyFallback(text);
+});
 
 var resizeTimer = null;
 window.addEventListener('resize', function(){
