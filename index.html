@@ -67,7 +67,7 @@ header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 18px;
   border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:7px}
 
 /* layout */
-.layout{display:grid;grid-template-columns:clamp(404px,26vw,462px) minmax(0,1fr);
+.layout{display:grid;grid-template-columns:clamp(492px,32vw,548px) minmax(0,1fr);
   gap:14px;align-items:stretch}
 .notes{grid-column:1/-1}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;
@@ -127,8 +127,10 @@ input:focus,select:focus{outline:2px solid var(--ink);outline-offset:-1px;border
 .lig label{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* seven fields abreast, so trim the chrome each one carries */
 .lig input[type=number]{font-size:12px;padding:2px 4px;text-align:right}
-.lig input[type=number]::-webkit-outer-spin-button,
-.lig input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+/* The steppers stay, and stay visible: the column is sized to leave room for
+   them beside the widest value a field can hold, so nothing shifts when the
+   pointer arrives and the controls are discoverable without hovering. */
+.lig input[type=number]::-webkit-inner-spin-button{opacity:1}
 
 /* model checkboxes */
 .chk{display:flex;align-items:flex-start;gap:7px;font-size:12.5px;color:var(--ink);
@@ -798,6 +800,12 @@ function sizePlot(){
     // use, as margin either side - the controls column stays narrow.
     var cs = getComputedStyle(main);
     var availW = Math.round(main.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
+    // ...and never stood on end either. A window that is tall for its width -
+    // an iframe, a portrait monitor - would otherwise hand the plot more height
+    // than it has width to match. availW does not depend on H, so this clamp
+    // cannot feed back into the one below it.
+    var minH = Math.round((availW - M.l - M.r) / 1.5 + M.t + M.b);
+    if (H > minH) H = Math.max(240, minH);
     var maxW = 2 * (H - M.t - M.b) + M.l + M.r;
     W = Math.max(400, Math.min(availW, Math.round(maxW)));
     svg.style.maxWidth = W + 'px';
