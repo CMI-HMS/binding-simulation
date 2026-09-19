@@ -57,37 +57,48 @@ body{background:var(--plane);color:var(--ink);font-family:var(--sans);
 .wrap{margin:0 auto;padding-inline:clamp(20px,2.2vw,44px);padding-block:10px 44px}
 
 /* header */
-.eyebrow{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--muted);margin:0 0 4px}
-h1{font-family:var(--sans);font-weight:700;font-size:clamp(19px,2.2vw,23px);
-  line-height:1.2;letter-spacing:-.018em;margin:0;text-wrap:balance}
-.deck{margin:7px 0 0;color:var(--ink-2);font-size:13.5px}
+/* Title and standfirst share one line. Every pixel spent here is a pixel the
+   plot does not get, and the plot is the point of the page. */
+h1{font-family:var(--sans);font-weight:700;font-size:clamp(18px,1.7vw,21px);
+  line-height:1.2;letter-spacing:-.018em;margin:0;flex:0 0 auto}
+.deck{margin:0;color:var(--ink-2);font-size:12.5px;line-height:1.4;flex:1 1 380px;min-width:0}
 .deck b{color:var(--ink);font-weight:600}
-header{border-bottom:1px solid var(--line);padding-bottom:11px;margin-bottom:12px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 18px;
+  border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:7px}
 
 /* layout */
-.layout{display:grid;grid-template-columns:minmax(0,1fr) clamp(326px,17vw,400px);
+.layout{display:grid;grid-template-columns:clamp(404px,26vw,462px) minmax(0,1fr);
   gap:14px;align-items:stretch}
-.notes{grid-column:1/-1;grid-row:2}
+.notes{grid-column:1/-1}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;
   box-shadow:var(--shadow)}
-.main{grid-column:1;grid-row:1;padding:12px 14px 12px;min-width:0}
-.rail{grid-column:2;grid-row:1;padding:12px 13px}
+/* Row 1: controls beside the plot. Row 2: models + results across the full
+   page width. Row 3: the explainer cards. */
+/* Nothing in here scrolls - the plot panel is sized to fit it instead. */
+.rail{grid-column:1;grid-row:1;padding:10px 12px}
+.main{grid-column:2;grid-row:1;padding:10px 14px;min-width:0}
+.side{grid-column:1/-1;grid-row:2;padding:7px 14px 8px;min-width:0}
+.notes{grid-row:3}
+
+/* the band holds the results table alone */
+.side .results{margin-top:0;border-top:0;padding-top:0}
+
 @media (max-width:920px){
+  /* stacked: chart, its results, then the controls, then the explainers */
   .layout{grid-template-columns:minmax(0,1fr)}
-  .main,.rail,.notes{grid-column:1}
-  .main{grid-row:1}.rail{grid-row:2 / span 1}.notes{grid-row:3}
+  .main,.side,.rail,.notes{grid-column:1}
+  .main{grid-row:1}.side{grid-row:2}.rail{grid-row:3}.notes{grid-row:4}
 }
 
 .sec{font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--muted);margin:0 0 4px}
-.sec.mt{margin-top:9px}
+  color:var(--muted);margin:0 0 3px}
+.sec.mt{margin-top:5px}
 
 /* scenario buttons - title only; the description lives in its own card */
 #scenarios{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 .scn{font:inherit;font-size:12px;font-weight:600;line-height:1.25;cursor:pointer;
   text-align:left;color:var(--ink);background:var(--surface-2);
-  border:1px solid var(--line);border-radius:7px;padding:5px 8px;min-height:34px;
+  border:1px solid var(--line);border-radius:7px;padding:4px 8px;min-height:29px;
   display:flex;align-items:center}
 .scn:hover{border-color:var(--ink-2)}
 .scn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
@@ -106,28 +117,52 @@ input:focus,select:focus{outline:2px solid var(--ink);outline-offset:-1px;border
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:4px 7px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 6px}
 .grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px 5px}
+/* six equal columns, each wide enough for a six-character value such as
+   0.0001 or 100000 - any parameter here can take one */
+.grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:1px 5px}
+/* replicates rides on the name row */
+.repfield{display:inline-flex;align-items:center;gap:5px;flex:0 0 auto}
+.repfield label{font-size:10.5px;margin:0;white-space:nowrap;color:var(--ink-2)}
+.repfield input[type=number]{width:44px;font-size:12px;padding:2px 5px;text-align:right}
+.lig label{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* seven fields abreast, so trim the chrome each one carries */
+.lig input[type=number]{font-size:12px;padding:2px 4px;text-align:right}
+.lig input[type=number]::-webkit-outer-spin-button,
+.lig input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 
 /* model checkboxes */
 .chk{display:flex;align-items:flex-start;gap:7px;font-size:12.5px;color:var(--ink);
-  margin-bottom:4px;cursor:pointer}
+  margin-bottom:3px;cursor:pointer}
 .chk input{width:15px;height:15px;margin:2px 0 0;accent-color:var(--ink);flex:none;cursor:pointer}
 .chk .sub{display:block;font-size:10.5px;color:var(--muted);line-height:1.35}
+/* The two model controls sit on their own row above the table, each one
+   holding its place whether or not that model is checked - unchecking a
+   model dims its control and drops its columns, and nothing moves. */
+.models{display:flex;flex-wrap:wrap;align-items:flex-start;gap:9px 30px;
+  padding:1px 2px 6px;margin-bottom:6px;border-bottom:1px solid var(--line);min-width:0}
+.mslot{display:flex;align-items:flex-start;flex-wrap:wrap;gap:6px 9px;
+  flex:0 1 auto;min-width:0}
+.mslot .chk{margin-bottom:0;flex:0 1 auto}
+.mslot .hillrow{flex:0 0 auto;margin:0}
+.mslot.off{opacity:.55}
 .hillrow{display:flex;gap:2px;background:var(--surface-2);border:1px solid var(--line);
-  border-radius:7px;padding:2px;margin:2px 0 0 22px;width:max-content}
-.hillrow button{font:inherit;font-size:11px;color:var(--ink-2);background:none;border:0;
-  border-radius:5px;padding:3px 9px;cursor:pointer}
+  border-radius:7px;padding:2px;width:max-content}
+.hillrow button{font:inherit;font-size:10.5px;color:var(--ink-2);background:none;border:0;
+  border-radius:5px;padding:3px 7px;cursor:pointer}
 .hillrow button[aria-pressed="true"]{background:var(--ink);color:var(--plane)}
 .hillrow button:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
 
 /* ligand cards */
-.lig{border:1px solid var(--line);border-radius:9px;padding:6px 9px 7px;
-  background:var(--surface-2);margin-bottom:5px}
-.lig.off{opacity:.55}
-.lig-head{display:flex;align-items:center;gap:8px}
-.lig.on .lig-head{margin-bottom:6px}
+.lig{border:1px solid var(--line);border-radius:9px;padding:2px 8px 3px;
+  background:var(--surface-2);margin-bottom:2px}
+/* An excluded ligand keeps its full card - same height, same fields, just
+   greyed - so the column does not jump as ligands are switched on and off. */
+.lig.off{opacity:.5}
+.lig.off .dot{filter:grayscale(1)}
+.lig-head{display:flex;align-items:center;gap:7px;margin-bottom:2px}
 .dot{width:10px;height:10px;border-radius:3px;flex:none}
-.lig-head input[type=text]{flex:1;min-width:0;border:0;background:none;padding:2px 3px;
-  font-weight:600;font-size:13px}
+.lig-head input[type=text]{flex:1;min-width:0;border:0;background:none;padding:1px 3px;
+  font-weight:600;font-size:12.5px}
 .lig-head input[type=text]:focus{background:var(--field);outline:1px solid var(--line-2)}
 .sw{position:relative;display:inline-flex;align-items:center;flex:none}
 .sw input{position:absolute;opacity:0;width:34px;height:19px;margin:0;cursor:pointer}
@@ -142,7 +177,7 @@ input:focus,select:focus{outline:2px solid var(--ink);outline-offset:-1px;border
   border:1px solid var(--line-2);border-radius:6px;padding:2px 7px;cursor:pointer;white-space:nowrap}
 .cpy:hover{border-color:var(--ink-2);color:var(--ink)}
 .cpy:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.hint{font-size:11px;color:var(--muted);line-height:1.45;margin:8px 0 0}
+.hint{font-size:10.5px;color:var(--muted);line-height:1.4;margin:7px 0 0}
 
 /* chart */
 .chart-head{display:flex;align-items:baseline;justify-content:flex-end;gap:12px;
@@ -153,7 +188,8 @@ input:focus,select:focus{outline:2px solid var(--ink);outline-offset:-1px;border
   border:0;border-radius:5px;padding:3px 10px;cursor:pointer}
 .scaletog button[aria-pressed="true"]{background:var(--ink);color:var(--plane)}
 .scaletog button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-svg.plot{display:block;width:100%;height:auto}
+/* centred, so the width the 2:1 cap gives back reads as margin either side */
+svg.plot{display:block;width:100%;height:auto;margin-inline:auto}
 /* Chart chrome reads as a hierarchy: faint grid, a structural axis line at
    ~3.5:1, tick numbers as real text at ~9:1, and the axis title in full ink. */
 .gridline{stroke:var(--grid);stroke-width:1}
@@ -169,7 +205,10 @@ svg.plot{display:block;width:100%;height:auto}
 .mid-line{stroke-width:1.3;stroke-dasharray:8 4;opacity:.8}
 
 /* legend */
-.legendrow{display:flex;flex-wrap:wrap;align-items:center;gap:5px 16px;margin-top:6px}
+/* An excluded ligand keeps its chip, unpainted, so the legend takes the same
+   number of lines whatever is switched on and the plot never resizes under it. */
+.legendrow{display:flex;flex-wrap:wrap;align-items:center;gap:5px 16px;margin-top:4px}
+.lgi.ph{visibility:hidden}
 .legend{display:flex;flex-wrap:wrap;gap:5px}
 .lgi{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-2);
   background:var(--surface-2);border:1px solid var(--line);border-radius:999px;
@@ -183,50 +222,64 @@ svg.plot{display:block;width:100%;height:auto}
 /* results */
 .results{margin-top:9px;border-top:1px solid var(--line);padding-top:8px}
 .tablescroll{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:13px;min-width:470px}
-th,td{text-align:right;padding:4.5px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
-th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+/* one row per ligand; each fitted model gets its own group of columns */
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:460px}
+th,td{text-align:right;padding:3.5px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+thead tr:first-child th:first-child,tbody td:first-child{text-align:left}
 thead th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
   font-weight:600;border-bottom:1px solid var(--line-2);white-space:normal;line-height:1.25;
   vertical-align:bottom;padding-bottom:5px}
+/* Now that the checkboxes no longer sit over the columns, each model names its
+   own block of columns here. */
+thead .grpth{text-align:center;padding:0 9px 2px;border-bottom:0;font-size:11px;
+  letter-spacing:.05em;color:var(--ink-2)}
 tbody td{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}
-tbody td:first-child,tbody td:nth-child(2){font-family:var(--sans)}
-tbody td:first-child{font-weight:500}
-tbody tr:last-child td{border-bottom:0}
+tbody td:first-child{font-family:var(--sans);font-weight:500}
+/* The table holds a row per ligand whether or not that ligand is switched on.
+   The unused ones are reserved but not painted, so the panel keeps its height
+   and the plot above it does not resize as ligands come and go. */
+/* the rule is kept but painted transparent, so a reserved row is exactly as
+   tall as a real one and still leaves no line behind */
+tbody tr.ph td,thead tr.ph th{visibility:hidden;border-color:transparent}
+tbody tr.end td{border-bottom:0}
+th.gl,td.gl{border-left:1px solid var(--line)}
 .nm{display:inline-flex;align-items:center;gap:7px}
-.tnote{font-size:12px;color:var(--muted);line-height:1.5;margin:8px 0 0}
-.tnote:empty{display:none}
 .fixedtag{color:var(--muted);font-family:var(--sans);font-size:11.5px}
 .se{color:var(--muted);font-size:12px;white-space:nowrap}
 
-/* notes */
-.notes{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
+/* notes: the three explainers share a row, the long card runs under them */
+.notes{margin-top:14px;display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+@media (min-width:820px){ .notes{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (min-width:1180px){ .notes{grid-template-columns:repeat(3,minmax(0,1fr))} }
 .note{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;
   box-shadow:var(--shadow)}
-@media (min-width:1500px){
-  /* four columns keeps the four explainer cards on one row instead of leaving
-     a ragged 5th or 7th slot; the long card goes multi-column so its measure
-     stays readable rather than one 200-character line */
-  .notes{grid-template-columns:repeat(4,minmax(0,1fr))}
-  #aboutCard{column-count:2;column-gap:34px}
-  #aboutCard h3{column-span:all}
-  .deck{max-width:118ch}
-}
 .note.wide{grid-column:1/-1}
-#scnCard{border-left:3px solid var(--ink)}
+/* inside the wide card: prose beside the assumptions once there is room for
+   two readable measures, stacked below that */
+.split{display:grid;grid-template-columns:minmax(0,1fr);gap:10px 34px}
+@media (min-width:820px){ .split{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
+.split h4{font-family:var(--sans);font-size:12.5px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+@media (min-width:1500px){ .deck{max-width:118ch} }
+
+/* the active scenario's description, directly under the plot */
+#scnCard{margin-top:8px;background:var(--surface-2);border:1px solid var(--line);
+  border-left:3px solid var(--ink);border-radius:9px;padding:7px 11px 8px;
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px}
 #scnCard.custom{border-left-color:var(--line-2)}
-#scnCard .eyebrow{margin-bottom:2px}
+#scnCard h3{font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:-.012em;
+  color:var(--ink);margin:0;flex:0 0 auto}
+#scnCard p{font-size:12.5px;line-height:1.45;color:var(--ink-2);margin:0;flex:1 1 300px;min-width:0}
 .note h3{font-family:var(--sans);font-size:15.5px;font-weight:700;margin:0 0 8px;letter-spacing:-.014em}
 .note p{margin:0 0 10px;color:var(--ink-2);font-size:13.5px}
 .note p:last-child{margin-bottom:0}
 .note ul{margin:0;padding-left:17px;color:var(--ink-2);font-size:13.5px}
 .note li{margin-bottom:6px}
 .note li:last-child{margin-bottom:0}
-.eq{font-family:var(--mono);font-size:12px;background:var(--surface-2);
-  border:1px solid var(--line);border-left:2px solid var(--ink-2);
-  border-radius:0 7px 7px 0;padding:10px 12px;margin:0 0 10px;color:var(--ink);
-  overflow-x:auto;white-space:nowrap}
-.eq .cm{color:var(--muted)}
+/* Equations read as bold sentences in the running text, not as code blocks. */
+.eq{font-family:var(--sans);font-size:14.5px;font-weight:600;letter-spacing:-.005em;
+  color:var(--ink);margin:0 0 10px}
+.eq .cm{color:var(--muted);font-weight:500;margin-right:7px}
 .rad{border-top:1px solid currentColor;padding:0 2px}
 .note p.pull{font-family:var(--sans);font-size:14.5px;font-weight:600;letter-spacing:-.005em;
   color:var(--ink);margin:0 0 10px}
@@ -246,12 +299,35 @@ footer a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-ra
 <body>
 <div class="wrap">
   <header>
-    <p class="eyebrow">Protein–ligand binding</p>
     <h1>Equilibrium Binding Simulation</h1>
-    <p class="deck">Simulate a saturation binding experiment — replicate measurements with Gaussian response noise — then fit it with the <b>specific binding model</b>, the <b>quadratic 1:1 model</b>, or both, and compare what each recovers against the K<sub>d</sub> the data were generated from.</p>
+    <p class="deck">Choose a scenario or build your own to simulate a binding experiment, then fit it with the <b>specific binding model</b>, the <b>quadratic 1:1 model</b>.</p>
   </header>
 
   <div class="layout">
+    <aside class="panel rail">
+      <p class="sec">Scenarios</p>
+      <div id="scenarios"></div>
+
+      <div class="grid2" style="margin-top:7px">
+        <div>
+          <label for="unit">Concentration unit</label>
+          <select id="unit"><option>pM</option><option selected>nM</option><option>µM</option><option>mM</option></select>
+        </div>
+        <div>
+          <label for="npts">Points per curve</label>
+          <input type="number" id="npts" min="4" max="60" step="1" value="12">
+        </div>
+      </div>
+
+      <p class="sec mt">Experimental parameters</p>
+      <div id="ligands"></div>
+
+      <div id="scnCard">
+        <h3 id="scnTitle">Ideal conditions</h3>
+        <p id="scnBody"></p>
+      </div>
+    </aside>
+
     <section class="panel main">
       <div class="chart-head">
         <div class="scaletog" role="group" aria-label="X axis scale">
@@ -267,6 +343,32 @@ footer a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-ra
         <div class="keyline" id="keyline"></div>
       </div>
 
+    </section>
+
+    <section class="panel side">
+      <div class="models" id="modelsRow">
+        <div class="mslot">
+          <label class="chk">
+            <input type="checkbox" id="mSpecific">
+            <span id="mSpecificName">Specific binding
+              <span class="sub">f = L<sup>n</sup>/(K + L<sup>n</sup>) — no depletion</span>
+            </span>
+          </label>
+          <div class="hillrow" role="group" aria-label="Hill slope in the no-depletion fit">
+            <button id="hillFixed" aria-pressed="true">n fixed at 1</button>
+            <button id="hillFit" aria-pressed="false">n fitted</button>
+          </div>
+        </div>
+        <div class="mslot">
+          <label class="chk">
+            <input type="checkbox" id="mQuadratic">
+            <span>Quadratic 1:1
+              <span class="sub">exact mass balance, ligand depletion included</span>
+            </span>
+          </label>
+        </div>
+      </div>
+
       <div class="results">
         <div class="tablescroll">
           <table>
@@ -274,79 +376,39 @@ footer a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-ra
             <tbody id="tbody"></tbody>
           </table>
         </div>
-        <p class="tnote" id="tnote"></p>
       </div>
     </section>
 
-    <aside class="panel rail">
-      <p class="sec">Scenarios</p>
-      <div id="scenarios"></div>
-
-      <p class="sec mt">Models to fit</p>
-      <label class="chk">
-        <input type="checkbox" id="mSpecific">
-        <span id="mSpecificName">Specific binding
-          <span class="sub">f = L<sup>n</sup>/(K + L<sup>n</sup>) — no depletion</span>
-        </span>
-      </label>
-      <div class="hillrow" role="group" aria-label="Hill slope in the no-depletion fit">
-        <button id="hillFixed" aria-pressed="true">n fixed at 1</button>
-        <button id="hillFit" aria-pressed="false">n fitted</button>
-      </div>
-      <label class="chk" style="margin-top:8px">
-        <input type="checkbox" id="mQuadratic">
-        <span>Quadratic 1:1
-          <span class="sub">exact mass balance, ligand depletion included</span>
-        </span>
-      </label>
-
-      <p class="sec mt">Shared settings</p>
-      <div class="grid2">
-        <div>
-          <label for="unit">Concentration unit</label>
-          <select id="unit"><option>pM</option><option selected>nM</option><option>µM</option><option>mM</option></select>
-        </div>
-        <div>
-          <label for="npts">Points per curve</label>
-          <input type="number" id="npts" min="4" max="60" step="1" value="12">
-        </div>
-      </div>
-
-      <p class="sec mt">Ligands</p>
-      <div id="ligands"></div>
-      <p class="hint">Each ligand is its own experiment at <b id="nptsEcho">12</b> log-spaced concentrations. <b>Copy A</b> duplicates ligand A's settings, but not its noise.</p>
-    </aside>
   <div class="notes">
-    <div class="note wide" id="scnCard">
-      <h3 id="scnTitle">Ideal conditions</h3>
-      <p id="scnBody"></p>
-    </div>
-
     <div class="note">
       <h3>The two models</h3>
       <p>Both describe one ligand binding one site. They differ in whether the protein is allowed to consume the ligand it binds.</p>
-      <p class="eq"><span class="cm">specific binding </span>f = L<sub>T</sub><sup>n</sup> ⁄ ( K + L<sub>T</sub><sup>n</sup> )</p>
-      <p class="eq"><span class="cm">quadratic 1:1 </span>f = [ (P<sub>T</sub>+L<sub>T</sub>+K<sub>d</sub>)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; − <span class="rad">√((P<sub>T</sub>+L<sub>T</sub>+K<sub>d</sub>)² − 4P<sub>T</sub>L<sub>T</sub>)</span> ] ⁄ 2P<sub>T</sub></p>
+      <p class="eq"><span class="cm">specific binding</span>f = L<sub>T</sub><sup>n</sup> ⁄ ( K + L<sub>T</sub><sup>n</sup> )</p>
+      <p class="eq"><span class="cm">quadratic 1:1</span>f = [ (P<sub>T</sub>+L<sub>T</sub>+K<sub>d</sub>) − <span class="rad">√((P<sub>T</sub>+L<sub>T</sub>+K<sub>d</sub>)² − 4P<sub>T</sub>L<sub>T</sub>)</span> ] ⁄ 2P<sub>T</sub></p>
       <p>The first assumes free ligand equals what you pipetted in. The second solves mass balance for both partners, so it needs [P]<sub>T</sub> and is strictly 1:1 — there is no Hill exponent to fit.</p>
     </div>
 
     <div class="note">
       <h3>EC<sub>50</sub> vs K<sub>d</sub></h3>
-      <p>The EC<sub>50</sub> is the half-saturating concentration — the midpoint of the curve, and what a titration actually measures. It equals the K<sub>d</sub> only when the protein is dilute.</p>
+      <p>The EC<sub>50</sub> is the half-saturating concentration — the midpoint of the curve. It equals the K<sub>d</sub> only when the protein is dilute.</p>
       <p class="pull">EC<sub>50</sub> = K<sub>d</sub> + n·[P]<sub>T</sub>/2 — at any affinity.</p>
-      <p>The specific binding model has no term for depletion, so its half-saturation K<sup>1/n</sup> drifts toward the EC<sub>50</sub> instead of the true K<sub>d</sub>. Watch it happen on the plot: each model’s fitted K<sub>d</sub> sits below the axis, the true EC<sub>50</sub> on it. When the specific fit’s mark slides up to meet the diamond, depletion has taken over and the number it reports is the EC<sub>50</sub>, not an affinity.</p>
+      <p>The specific binding model has no term for depletion, so as [P]<sub>T</sub> increases relative to [L]<sub>T</sub>, the fit K<sub>d</sub> drifts toward the EC<sub>50</sub> instead of the true K<sub>d</sub>. The quadratic binding model accounts for ligand depletion and produces a more accurate K<sub>d</sub> measurement, but it is also compromised at high protein concentration.</p>
     </div>
 
     <div class="note">
-      <h3>The Hill coefficient</h3>
-      <p>Raising <em>n</em> steepens the curve — a switch instead of a dimmer. Half saturation sits where L<sup>n</sup> = K, that is at L = K<sup>1/n</sup>, so <em>K</em> and <em>n</em> set the position together: raise <em>n</em> at fixed <em>K</em> and the curve both steepens and shifts. Hold K<sup>1/n</sup> fixed instead and <em>n</em> changes steepness alone.</p>
-      <p class="eq"><span class="cm">10% to 90% occupancy spans</span>  81<sup>1/n</sup>-fold in L<sub>f</sub></p>
-      <p>That is 81-fold at <em>n</em> = 1 and about 3-fold at <em>n</em> = 4. Fitting cooperative data with <em>n</em> locked at 1 cannot reproduce that steepness, and the fit pays for it in both K and residuals.</p>
-      <p>But <em>n</em> is a shape parameter, not a count of sites. A fitted value of 2.3 does not mean 2.3 of anything — use it to describe steepness, and say so.</p>
+      <h3>The Hill coefficient, <em>n</em></h3>
+      <p>The <em>n</em> term, or Hill coefficient, is a measure of cooperativity. At <b><em>n</em> = 1</b> the sites are independent — there is either one binding site, or no cooperativity between sites. When <b><em>n</em> &gt; 1</b> there is positive cooperativity: each binding event makes the next easier. When <b><em>n</em> &lt; 1</b> there is negative cooperativity. <em>n</em> is a measure of the steepness of the curve, not a count of sites or a stoichiometry. With <em>n</em> fixed at 1 the fitted K <em>is</em> a K<sub>d</sub>; once <em>n</em> is fitted, K has units of concentration<sup>n</sup> and is no longer a K<sub>d</sub> — the half-saturating concentration is then K<sup>1/n</sup>. 10% to 90% occupancy spans <b>81<sup>1/n</sup>-fold in L<sub>f</sub></b>.</p>
     </div>
 
-    <div class="note">
-      <h3>What this assumes</h3>
+    <div class="note wide" id="aboutCard">
+      <h3>About this simulation</h3>
+      <div class="split">
+      <div>
+      <h4>How it works</h4>
+      <p>The data are generated from exact mass balance using each ligand's true K<sub>d</sub> and Hill coefficient — never from the model being fitted — so with <em>n</em> = 1 and dilute protein the two models describe the same curve and any gap between them is depletion. Fits minimise the sum of squares over every replicate point, not over the means, with B<sub>max</sub> fixed at 1, the quadratic fit given the true [P]<sub>T</sub>, and noise seeded per ligand so the same settings always reproduce the same dataset. The ± values are asymptotic standard errors, from the Gauss–Newton approximation to the least-squares curvature at the optimum: they tighten as you add replicates, and they say how tightly <em>this</em> dataset pins the parameter and nothing else — a small error beside a badly wrong K means the wrong model fits precisely, not that the answer is right.</p>
+      </div>
+      <div>
+      <h4>What it assumes</h4>
       <ul>
         <li><b>True equilibrium.</b> Nothing here is kinetic.</li>
         <li><b>One kind of site.</b> Two independent site classes need a different model.</li>
@@ -355,13 +417,8 @@ footer a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-ra
         <li><b>Noise is unbounded.</b> Gaussian error is added to the true fraction with no clipping, so points can land below 0 or above 1 — as a real normalised readout does.</li>
         <li><b>Units are labels.</b> Everything shares one unit; switching it rescales nothing.</li>
       </ul>
-    </div>
-
-    <div class="note wide" id="aboutCard">
-      <h3>About this simulation</h3>
-      <p>The data are generated from exact mass balance using each ligand's true K<sub>d</sub> and Hill coefficient — never from the model being fitted. With <em>n</em> = 1 and dilute protein the two models describe the same curve, so any gap you see between them is depletion.</p>
-      <p>Every curve is sampled at <b id="methPts">12</b> concentrations spaced logarithmically across that ligand's titration range; the Log&nbsp;x / Linear&nbsp;x toggle changes only the display, never the sampling. Points are the replicate mean, and bars are ±1 SD of those replicates, drawn only when there are two or more.</p>
-      <p>Fits minimise the sum of squares over every replicate point, not over the means, with B<sub>max</sub> fixed at 1 and the quadratic fit given the true [P]<sub>T</sub>. Standard errors are asymptotic, from the Gauss–Newton approximation to the least-squares curvature at the optimum; they tighten as you add replicates, and they say how tightly <em>this</em> dataset pins the parameter and nothing else — a small error beside a badly wrong K means the wrong model fits precisely, not that the answer is right. Noise is seeded per ligand, so the same settings always reproduce the same dataset.</p>
+      </div>
+      </div>
     </div>
   </div>
 
@@ -701,10 +758,67 @@ var W = 860, H = 380, M = { l: 68, r: 28, t: 18, b: 62 };
 // plot area and everything else keeps the size it was designed at.
 function sizePlot(){
   var svg = document.getElementById('plot');
+  var layout = document.querySelector('.layout');
+  var main = svg.parentNode, rail = document.querySelector('.rail');
+  while (main && main.className.indexOf('main') < 0) main = main.parentNode;
+
+  if (main && rail && Math.abs(rail.getBoundingClientRect().top - main.getBoundingClientRect().top) < 2){
+    // Both panels are stretched to the row, so their boxes are the same height
+    // by construction. Measure each one's NATURAL content height instead -
+    // otherwise the plot grows the row, the row grows the rail, and the target
+    // chases itself 1px per redraw.
+    var natural = function(el){
+      var r = el.getBoundingClientRect(), kids = el.children;
+      if (!kids.length) return r.height;
+      return kids[kids.length - 1].getBoundingClientRect().bottom - r.top +
+             (parseFloat(getComputedStyle(el).paddingBottom) || 0);
+    };
+    var chrome = natural(main) - svg.getBoundingClientRect().height;
+    var railContent = natural(rail);
+
+    // The room the page has. Height never comes from the width, which would
+    // fight the aspect cap below and set the two chasing each other.
+    H = Math.round(Math.min(860, window.innerHeight * 0.68));
+    var band = document.querySelector('.side');
+    if (band){
+      var gap = 14, safety = 18;
+      var row = window.innerHeight - (main.getBoundingClientRect().top + window.scrollY)
+              - gap - band.getBoundingClientRect().height - safety;
+      if (row > 320) H = Math.max(240, Math.min(H, Math.round(row - chrome)));
+    }
+    // The controls column never scrolls inside itself, so the plot panel has to
+    // be at least as tall as the controls are. On a short window that is what
+    // pushes the results table below the fold, and it is the right trade: a
+    // ligand card half cut off is worse than a scroll.
+    var need = Math.round(railContent - chrome);
+    if (need > H) H = Math.min(need, 860);
+
+    // A binding curve read in a letterbox is a bad curve: the axes never run
+    // past 2:1. The plot keeps its shape and gives back the width it cannot
+    // use, as margin either side - the controls column stays narrow.
+    var cs = getComputedStyle(main);
+    var availW = Math.round(main.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
+    var maxW = 2 * (H - M.t - M.b) + M.l + M.r;
+    W = Math.max(400, Math.min(availW, Math.round(maxW)));
+    svg.style.maxWidth = W + 'px';
+
+    rail.style.maxHeight = '';
+    rail.style.overflowY = '';
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    return;
+  }
+
+  // stacked layout: the plot spans the column and takes its shape from its width
   var w = Math.round(svg.getBoundingClientRect().width);
   if (!w) return;
+  svg.style.maxWidth = '';
   W = Math.max(520, w);
-  H = Math.round(Math.max(300, Math.min(W * 0.44, 760, window.innerHeight * 0.60)));
+  H = Math.round(Math.max(300, Math.min(W * 0.50, 760, window.innerHeight * 0.60)));
+  if (rail){
+    rail.style.maxHeight = '';
+    rail.style.overflowY = '';
+  }
+  if (layout) layout.style.removeProperty('--railw');
   svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
 }
 var Y0 = -0.09, Y1 = 1.12;
@@ -753,7 +867,12 @@ function pathOf(xs, ys, d){
 }
 
 function draw(){
-  sizePlot();
+  // Sizing reads the laid-out page, and its own result changes that layout, so
+  // run it until it stops moving rather than trusting a single pass - one
+  // toggle should never leave the plot a few pixels short of where the same
+  // state started.
+  var pw = -1, ph = -1;
+  for (var pass = 0; pass < 6 && (W !== pw || H !== ph); pass++){ pw = W; ph = H; sizePlot(); }
   var c = cache, d = c.d, s = '', i;
   var ay = H - M.b;
   // draw C first and A last, so ligand A sits in front
@@ -862,84 +981,97 @@ function pm(v, se){
 }
 
 function renderResults(){
-  var c = cache, u = state.unit, rows = '';
+  var c = cache, u = state.unit, body = [];
   var thead = document.getElementById('thead'), tbody = document.getElementById('tbody');
+  var nlig = state.ligands.length;
+  // reserved-but-unpainted rows, so every state is the same height
+  var pad = function(n, cols){
+    // same cell shape as a real row, so a reserved row is exactly as tall
+    var one = '<tr class="ph"><td><span class="nm"><b class="dot"></b>x</span></td>' +
+      '<td colspan="' + (cols - 1) + '">x</td></tr>';
+    var s = '';
+    for (var k = 0; k < n; k++) s += one;
+    return s;
+  };
+  var msg = function(text, cols){
+    return '<tr class="end"><td colspan="' + cols + '" style="color:var(--muted);' +
+      'font-family:var(--sans)">' + text + '</td></tr>' + pad(nlig - 1, cols);
+  };
+
+  if (!state.fitSpecific && !state.fitQuadratic){
+    // no columns to name, so the header is reserved blank rather than dropped
+    thead.innerHTML = '<tr class="ph"><th rowspan="2">Ligand</th><th rowspan="2">EC<sub>50</sub> (' +
+      u + ')</th><th class="grpth gl">x</th></tr><tr class="ph"><th class="gl">K<sub>d</sub> fit (' +
+      u + ')</th></tr>';
+    tbody.innerHTML = msg('Choose at least one model to fit. The simulated data are plotted above.', 3);
+    alignModels();
+    return;
+  }
+
+  // Each selected model contributes a group of columns, so one ligand is one
+  // row. Hill n only earns a column while it is being fitted - pinned at 1 it
+  // would repeat down the whole table, and the control already says so.
+  // Units run inline so the column labels stay one line tall: the model name
+  // above them is the extra row, and the header ends up no deeper than before.
+  var showHalf = state.fitSpecific && state.fitHill;
+  var specCols = (showHalf ? ['K fit (' + u + '<sup>n</sup>)'] : [])
+    .concat(['K<sub>d</sub> fit (' + u + ')'], showHalf ? ['Hill n'] : [], ['RMSE']);
+  var quadCols = ['K<sub>d</sub> fit (' + u + ')', 'RMSE'];
+
+  var h1 = '<tr><th rowspan="2">Ligand</th><th rowspan="2">EC<sub>50</sub> (' + u + ')</th>', h2 = '<tr>';
+  if (state.fitSpecific){
+    h1 += '<th class="grpth gl" data-grp="specific" colspan="' + specCols.length + '">' +
+      specificName('cap') + '</th>';
+    specCols.forEach(function(t, i){ h2 += '<th' + (i === 0 ? ' class="gl"' : '') + '>' + t + '</th>'; });
+  }
+  if (state.fitQuadratic){
+    h1 += '<th class="grpth gl" data-grp="quadratic" colspan="' + quadCols.length + '">Quadratic 1:1</th>';
+    quadCols.forEach(function(t, i){ h2 += '<th' + (i === 0 ? ' class="gl"' : '') + '>' + t + '</th>'; });
+  }
+  thead.innerHTML = h1 + '</tr>' + h2 + '</tr>';
+  var ncol = 2 + (state.fitSpecific ? specCols.length : 0) +
+                 (state.fitQuadratic ? quadCols.length : 0);
 
   if (!c.groups.length){
-    thead.innerHTML = '';
-    tbody.innerHTML = '<tr><td colspan="8" style="color:var(--muted);font-family:var(--sans)">' +
-      'Switch on a ligand to simulate an experiment.</td></tr>';
-    document.getElementById('tnote').innerHTML = '';
+    tbody.innerHTML = msg('Switch on a ligand to simulate an experiment.', ncol);
+    alignModels();
     return;
   }
-  if (!state.fitSpecific && !state.fitQuadratic){
-    thead.innerHTML = '';
-    tbody.innerHTML = '<tr><td colspan="8" style="color:var(--muted);font-family:var(--sans)">' +
-      'Choose at least one model to fit. The simulated data are plotted above.</td></tr>';
-    document.getElementById('tnote').innerHTML = dataCaption();
-    return;
-  }
-
-  // K is a concentration whenever n = 1, so the K^(1/n) column only earns its
-  // place while the Hill slope is being fitted
-  var showHalf = state.fitSpecific && state.fitHill;
-  thead.innerHTML = '<tr><th>Ligand</th><th>Model fitted</th>' +
-    '<th>True K<sub>d</sub><br>(' + u + ')</th>' +
-    '<th>EC<sub>50</sub><br>(' + u + ')</th>' +
-    (showHalf
-      ? '<th>K fit<br>(' + u + '<sup>n</sup>)</th><th>K<sub>d</sub> fit<br>K<sup>1/n</sup> (' + u + ')</th>'
-      : '<th>K<sub>d</sub> fit<br>(' + u + ')</th>') +
-    '<th>Hill n</th><th>RMSE</th></tr>';
 
   c.groups.forEach(function(g){
-    g.fits.forEach(function(f, k){
-      var unitTag = (f.model === 'specific' && f.fittedN)
-        ? ' <span class="fixedtag">' + u + '<sup>n</sup></span>'
-        : ' <span class="fixedtag">' + u + '</span>';
-      rows += '<tr><td>' + (k === 0
-          ? '<span class="nm"><b class="dot" style="background:' + col(g.idx % 3) + '"></b>' + esc(g.name) + '</span>'
-          : '') + '</td>' +
-        '<td>' + (f.model === 'specific' ? specificName('cap') : MODEL_NAME[f.model]) + '</td>' +
-        '<td>' + (k === 0 ? fmt(g.L.kd, 3) : '') + '</td>' +
-        '<td>' + (k === 0 ? fmt(g.mid, 3) : '') + '</td>' +
-        '<td>' + pm(f.K, f.seK) + unitTag + '</td>' +
-        (showHalf ? '<td>' + pm(f.kHalf, f.seHalf) + '</td>' : '') +
-        '<td>' + (f.model === 'quadratic'
-          ? '1 <span class="fixedtag">by model</span>'
-          : (f.fittedN ? pm(f.n, f.seN) : '1 <span class="fixedtag">fixed</span>')) + '</td>' +
-        '<td>' + f.rmse.toFixed(3) + '</td></tr>';
-    });
+    var pick = function(model){
+      return g.fits.filter(function(f){ return f.model === model; })[0];
+    };
+    var rows = '<tr><td><span class="nm"><b class="dot" style="background:' + col(g.idx % 3) +
+      '"></b>' + esc(g.name) + '</span></td>' +
+      '<td>' + fmt(g.mid, 3) + '</td>';
+    var sp = pick('specific');
+    if (state.fitSpecific && sp){
+      if (showHalf) rows += '<td class="gl">' + (sp.fittedN ? pm(sp.K, sp.seK) : '\u2014') + '</td>';
+      rows += '<td' + (showHalf ? '' : ' class="gl"') + '>' + pm(sp.kHalf, sp.seHalf) + '</td>';
+      if (showHalf) rows += '<td>' + pm(sp.n, sp.seN) + '</td>';
+      rows += '<td>' + sp.rmse.toFixed(3) + '</td>';
+    }
+    var qd = pick('quadratic');
+    if (state.fitQuadratic && qd){
+      rows += '<td class="gl">' + pm(qd.kHalf, qd.seHalf) + '</td>' +
+              '<td>' + qd.rmse.toFixed(3) + '</td>';
+    }
+    body.push(rows + '</tr>');
   });
-  tbody.innerHTML = rows;
-  document.getElementById('tnote').innerHTML =
-    dataCaption() +
-    (showHalf
-      ? 'The Hill model is fitted as f = L<sup>n</sup>/(K + L<sup>n</sup>), so its raw K has units of ' + u +
-        '<sup>n</sup> and is not a K<sub>d</sub>. K<sup>1/n</sup> is the concentration at half saturation \u2014 ' +
-        'the comparable number, and the one marked on the plot. The quadratic model is 1:1, so its K is already a concentration. '
-      : '') +
-    'Each fitted K<sub>d</sub> is marked below the axis \u2014 solid triangle for the quadratic fit, hollow for '+
-    '' + specificName('the') + '. The hollow diamond on the axis is the true EC<sub>50</sub> \u2014 the midpoint of the '+
-    'simulated curve, K<sub>d</sub> + n\u00b7[P]<sub>T</sub>/2, where it really reaches half saturation. '+
-    '\u00b1 values are standard errors of the fitted parameters, taken from the curvature of the ' +
-    'least-squares surface at the optimum.';
+  body[body.length - 1] = body[body.length - 1].replace('<tr>', '<tr class="end">');
+  tbody.innerHTML = body.join('') + pad(nlig - body.length, ncol);
+  alignModels();
 }
 
-// What the plotted points are and which models were fitted. This used to sit
-// above the chart; it now opens the note under the results table.
-function dataCaption(){
-  var bits = [];
-  if (state.fitSpecific) bits.push(state.fitHill ? 'the Hill model' : 'specific binding with n fixed at 1');
-  if (state.fitQuadratic) bits.push('quadratic 1:1');
-  var reps = cache.groups.map(function(g){ return Math.max(1, Math.round(num(g.L.reps, 3))); });
-  var lead = !reps.length ? ''
-    : Math.max.apply(null, reps) === 1
-      ? 'Each point is a single measurement, so there are no error bars. '
-      : Math.min.apply(null, reps) === 1
-        ? 'Points are replicate means with ±1 SD bars; a single measurement gets no bar. '
-        : 'Points are replicate means with ±1 SD bars. ';
-  return lead +
-    (bits.length ? 'Fitted with ' + bits.join(' and ') + '. ' : 'No model selected — data only. ');
+// The model row is fixed - both controls always sit in the same place. This
+// only dims the one whose model is switched off.
+function alignModels(){
+  var row = document.getElementById('modelsRow');
+  if (!row) return;
+  var slots = row.querySelectorAll('.mslot');
+  slots[0].classList.toggle('off', !state.fitSpecific);
+  slots[1].classList.toggle('off', !state.fitQuadratic);
 }
 
 function renderChrome(){
@@ -947,14 +1079,16 @@ function renderChrome(){
 
   key.innerHTML =
     '<i><span class="dotmark"></span>mean ± SD</i>' +
-    (state.fitQuadratic ? '<i><span class="glyph"></span>quadratic 1:1 fit</i>' : '') +
-    (state.fitSpecific ? '<i><span class="glyph dash"></span>' + specificName('low') + ' fit</i>' : '') +
-    (state.fitQuadratic ? '<i><span>▲ K<sub>d</sub> from the quadratic fit</span></i>' : '') +
-    (state.fitSpecific ? '<i><span>△ K<sub>d</sub> from the ' + specificName('short') + ' fit</span></i>' : '') +
-    '<i><span>◇ EC<sub>50</sub>, on the axis</span></i>';
+    (state.fitQuadratic ? '<i><span class="glyph"></span>quadratic fit</i>' : '') +
+    (state.fitSpecific ? '<i><span class="glyph dash"></span>' + specificName('short') + ' fit</i>' : '') +
+    (state.fitQuadratic ? '<i><span>▲ K<sub>d</sub>, quadratic</span></i>' : '') +
+    (state.fitSpecific ? '<i><span>△ K<sub>d</sub>, ' + specificName('short') + '</span></i>' : '') +
+    '<i><span>◇ EC<sub>50</sub> on the axis</span></i>';
 
-  document.getElementById('legend').innerHTML = cache.groups.map(function(g){
-    return '<span class="lgi"><b class="dot" style="background:' + col(g.idx % 3) + '"></b>' + esc(g.name) + '</span>';
+  document.getElementById('legend').innerHTML = state.ligands.map(function(L, i){
+    var on = cache.groups.some(function(g){ return g.idx === i; });
+    return '<span class="lgi' + (on ? '' : ' ph') + '"><b class="dot" style="background:' +
+      col(i % 3) + '"></b>' + esc(L.name) + '</span>';
   }).join('');
 
   document.getElementById('mSpecificName').firstChild.nodeValue = specificName('cap') + ' ';
@@ -994,24 +1128,24 @@ function renderLigands(){
     var head = '<div class="lig-head">' +
       '<span class="dot" style="background:' + col(i) + '"></span>' +
       '<input type="text" data-f="name" data-i="' + i + '" value="' + esc(L.name) + '" aria-label="Ligand name">' +
-      (i > 0 && L.on
+      (i > 0
         ? '<button class="cpy" data-cp="' + i + '" title="Copy every variable from ' + esc(state.ligands[0].name) +
           '">Copy A</button>'
         : '') +
+      '<span class="repfield"><label for="reps' + i + '">Reps</label>' +
+        '<input type="number" id="reps' + i + '" data-f="reps" data-i="' + i + '" value="' + L.reps +
+        '" min="1" max="12" step="1"></span>' +
       '<label class="sw"><input type="checkbox" data-f="on" data-i="' + i + '"' + (L.on ? ' checked' : '') +
         ' aria-label="Include ' + esc(L.name) + '"><span></span></label></div>';
-    if (!L.on) return '<div class="lig off">' + head + '</div>';
-    var body = '<div class="grid4">' +
+    var body = '<div class="grid6">' +
         fieldRow(i, 'pt', '[P]<sub>T</sub>', 'value="' + L.pt + '" min="0" step="any"') +
         fieldRow(i, 'kd', 'K<sub>d</sub>', 'value="' + L.kd + '" min="0" step="any"') +
         fieldRow(i, 'n', 'Hill n', 'value="' + L.n + '" min="0.2" max="6" step="0.1"') +
         fieldRow(i, 'sd', 'Noise SD', 'value="' + L.sd + '" min="0" step="0.01"') +
-      '</div><div class="grid3" style="margin-top:4px">' +
         fieldRow(i, 'min', 'Min [L]', 'value="' + L.min + '" min="0" step="any"') +
         fieldRow(i, 'max', 'Max [L]', 'value="' + L.max + '" min="0" step="any"') +
-        fieldRow(i, 'reps', 'Replicates', 'value="' + L.reps + '" min="1" max="12" step="1"') +
       '</div>';
-    return '<div class="lig on">' + head + body + '</div>';
+    return '<div class="lig ' + (L.on ? 'on' : 'off') + '">' + head + body + '</div>';
   }).join('');
 
   host.querySelectorAll('.cpy').forEach(function(btn){
@@ -1067,16 +1201,12 @@ function touched(){
 
 function redraw(){
   build();
-  draw();
   renderChrome();
   renderResults();
+  // last: the plot sizes itself against the results band, which has just been
+  // rebuilt and may have changed height
+  draw();
 }
-// the point count appears in two prose spots; keep both in step
-function setPointEchoes(n){
-  document.getElementById('nptsEcho').textContent = n;
-  document.getElementById('methPts').textContent = n;
-}
-
 function renderAll(){
   renderLigands();
   document.querySelectorAll('[data-scn]').forEach(function(b){
@@ -1084,7 +1214,6 @@ function renderAll(){
   });
   document.getElementById('unit').value = state.unit;
   document.getElementById('npts').value = state.points;
-  setPointEchoes(state.points);
   renderScenarioCard();
   redraw();
 }
@@ -1112,7 +1241,6 @@ document.getElementById('npts').addEventListener('input', function(){
   var n = clampInt(parseFloat(this.value), NPTS_MIN, NPTS_MAX, NaN);
   if (!isFinite(n) || n !== Math.round(parseFloat(this.value))) return;
   state.points = n;
-  setPointEchoes(n);
   touched(); redraw();
 });
 document.getElementById('npts').addEventListener('blur', function(){
@@ -1120,7 +1248,6 @@ document.getElementById('npts').addEventListener('blur', function(){
   this.value = n;
   if (n === state.points) return;
   state.points = n;
-  setPointEchoes(n);
   touched(); redraw();
 });
 document.getElementById('scaleLog').addEventListener('click', function(){ state.scale = 'log'; redraw(); });
@@ -1129,7 +1256,7 @@ document.getElementById('scaleLin').addEventListener('click', function(){ state.
 var resizeTimer = null;
 window.addEventListener('resize', function(){
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(function(){ if (cache) draw(); }, 120);
+  resizeTimer = setTimeout(function(){ if (cache){ draw(); alignModels(); } }, 120);
 });
 
 var mq = window.matchMedia('(prefers-color-scheme: dark)');
@@ -1141,6 +1268,8 @@ renderScenarios();
 SCENARIOS[0].apply();
 state.preset = SCENARIOS[0].key;
 renderAll();
+// the first pass runs before the grid has settled, so re-size the plot once
+requestAnimationFrame(function(){ if (cache) draw(); });
 })();
 </script>
 </body>
