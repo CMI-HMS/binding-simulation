@@ -1,0 +1,1093 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Equilibrium Binding Simulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root{
+  --plane:#EDF1F0;
+  --surface:#FBFCFC;
+  --surface-2:#F3F7F6;
+  --ink:#101615;
+  --ink-2:#4B5654;
+  --muted:#7C8785;
+  --line:#DBE2E0;
+  --line-2:#C5CECC;
+  --grid:#D3DBD9;
+  --axis:#7D8886;
+  --tick:#3F4A48;
+  --s1:#2a78d6;
+  --s2:#eb6834;
+  --s3:#1baf7a;
+  --field:#FFFFFF;
+  --shadow:0 1px 2px rgba(16,22,21,.05);
+  --sans:"Archivo",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --plane:#0B0F0E; --surface:#161B1A; --surface-2:#1C2221;
+    --ink:#F1F4F3; --ink-2:#A9B4B2; --muted:#7E8987;
+    --line:#272E2D; --line-2:#343C3B; --grid:#2F3735; --axis:#6A7472; --tick:#B8C2C0;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+    --field:#101514; --shadow:0 1px 2px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --plane:#0B0F0E; --surface:#161B1A; --surface-2:#1C2221;
+  --ink:#F1F4F3; --ink-2:#A9B4B2; --muted:#7E8987;
+  --line:#272E2D; --line-2:#343C3B; --grid:#2F3735; --axis:#6A7472; --tick:#B8C2C0;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+  --field:#101514; --shadow:0 1px 2px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+body{background:var(--plane);color:var(--ink);font-family:var(--sans);
+  font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:10px 44px}
+
+/* header */
+.eyebrow{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 4px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(19px,2.2vw,23px);
+  line-height:1.2;letter-spacing:-.008em;margin:0;text-wrap:balance}
+.deck{margin:7px 0 0;color:var(--ink-2);font-size:13.5px}
+.deck b{color:var(--ink);font-weight:600}
+header{border-bottom:1px solid var(--line);padding-bottom:11px;margin-bottom:12px}
+
+/* layout */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 326px;gap:14px;align-items:stretch}
+.notes{grid-column:1/-1;grid-row:2}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--shadow)}
+.main{grid-column:1;grid-row:1;padding:12px 14px 12px;min-width:0}
+.rail{grid-column:2;grid-row:1;padding:12px 13px}
+@media (max-width:920px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  .main,.rail,.notes{grid-column:1}
+  .main{grid-row:1}.rail{grid-row:2 / span 1}.notes{grid-row:3}
+}
+
+.sec{font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 4px}
+.sec.mt{margin-top:9px}
+
+/* scenario buttons - title only; the description lives in its own card */
+#scenarios{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.scn{font:inherit;font-size:12px;font-weight:600;line-height:1.25;cursor:pointer;
+  text-align:left;color:var(--ink);background:var(--surface-2);
+  border:1px solid var(--line);border-radius:7px;padding:5px 8px;min-height:34px;
+  display:flex;align-items:center}
+.scn:hover{border-color:var(--ink-2)}
+.scn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.scn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--plane)}
+
+/* form controls */
+label{display:block;font-size:11px;line-height:1.3;color:var(--ink-2);margin-bottom:1px}
+/* keep a subscripted label the same height as a plain one so the inputs line up */
+label sub,label sup{line-height:0;position:relative;vertical-align:baseline;font-size:75%}
+label sub{bottom:-.25em}label sup{top:-.5em}
+input[type=number],input[type=text],select{
+  width:100%;font:inherit;font-size:12.5px;background:var(--field);color:var(--ink);
+  border:1px solid var(--line-2);border-radius:6px;padding:3px 6px}
+input[type=number],.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+input:focus,select:focus{outline:2px solid var(--ink);outline-offset:-1px;border-color:var(--ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:4px 7px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 6px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px 5px}
+
+/* model checkboxes */
+.chk{display:flex;align-items:flex-start;gap:7px;font-size:12.5px;color:var(--ink);
+  margin-bottom:4px;cursor:pointer}
+.chk input{width:15px;height:15px;margin:2px 0 0;accent-color:var(--ink);flex:none;cursor:pointer}
+.chk .sub{display:block;font-size:10.5px;color:var(--muted);line-height:1.35}
+.hillrow{display:flex;gap:2px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:7px;padding:2px;margin:2px 0 0 22px;width:max-content}
+.hillrow button{font:inherit;font-size:11px;color:var(--ink-2);background:none;border:0;
+  border-radius:5px;padding:3px 9px;cursor:pointer}
+.hillrow button[aria-pressed="true"]{background:var(--ink);color:var(--plane)}
+.hillrow button:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+
+/* ligand cards */
+.lig{border:1px solid var(--line);border-radius:9px;padding:6px 9px 7px;
+  background:var(--surface-2);margin-bottom:5px}
+.lig.off{opacity:.55}
+.lig-head{display:flex;align-items:center;gap:8px}
+.lig.on .lig-head{margin-bottom:6px}
+.dot{width:10px;height:10px;border-radius:3px;flex:none}
+.lig-head input[type=text]{flex:1;min-width:0;border:0;background:none;padding:2px 3px;
+  font-weight:600;font-size:13px}
+.lig-head input[type=text]:focus{background:var(--field);outline:1px solid var(--line-2)}
+.sw{position:relative;display:inline-flex;align-items:center;flex:none}
+.sw input{position:absolute;opacity:0;width:34px;height:19px;margin:0;cursor:pointer}
+.sw span{width:32px;height:18px;border-radius:999px;background:var(--line-2);display:block;
+  position:relative;transition:background .12s}
+.sw span::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;
+  border-radius:50%;background:var(--surface);transition:transform .12s}
+.sw input:checked + span{background:var(--ink)}
+.sw input:checked + span::after{transform:translateX(14px)}
+.sw input:focus-visible + span{outline:2px solid var(--ink);outline-offset:2px}
+.cpy{font:inherit;font-size:10.5px;color:var(--ink-2);background:var(--surface);flex:none;
+  border:1px solid var(--line-2);border-radius:6px;padding:2px 7px;cursor:pointer;white-space:nowrap}
+.cpy:hover{border-color:var(--ink-2);color:var(--ink)}
+.cpy:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.hint{font-size:11px;color:var(--muted);line-height:1.45;margin:8px 0 0}
+
+/* chart */
+.chart-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  margin-bottom:3px;flex-wrap:wrap}
+.chart-title{font-family:var(--serif);font-size:15px;font-weight:600;margin:0}
+.chart-sub{font-size:11.5px;color:var(--muted);margin:0 0 5px;line-height:1.45}
+.scaletog{display:inline-flex;gap:2px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:7px;padding:2px}
+.scaletog button{font:inherit;font-size:11.5px;font-weight:500;color:var(--ink-2);background:none;
+  border:0;border-radius:5px;padding:3px 9px;cursor:pointer}
+.scaletog button[aria-pressed="true"]{background:var(--ink);color:var(--plane)}
+.scaletog button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+svg.plot{display:block;width:100%;height:auto}
+/* Chart chrome reads as a hierarchy: faint grid, a structural axis line at
+   ~3.5:1, tick numbers as real text at ~9:1, and the axis title in full ink. */
+.gridline{stroke:var(--grid);stroke-width:1}
+.axisline{stroke:var(--axis);stroke-width:1.5;shape-rendering:crispEdges}
+.tick{fill:var(--tick);font-family:var(--mono);font-size:13px;font-weight:500}
+.alab{fill:var(--ink);font-family:var(--sans);font-size:14px;font-weight:600}
+.curve{fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.curve.dotted{stroke-dasharray:1 5.5}
+.ebar{stroke-width:1.6;stroke-linecap:round}
+.obs{stroke:var(--surface);stroke-width:1.6}
+.kd-line{stroke-width:1.2;stroke-dasharray:3 3;opacity:.72}
+.kd-line.dotted{stroke-dasharray:1 4}
+.mid-line{stroke-width:1.3;stroke-dasharray:8 4;opacity:.8}
+
+/* legend */
+.legendrow{display:flex;flex-wrap:wrap;align-items:center;gap:5px 16px;margin-top:6px}
+.legend{display:flex;flex-wrap:wrap;gap:5px}
+.lgi{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-2);
+  background:var(--surface-2);border:1px solid var(--line);border-radius:999px;
+  padding:2px 9px 2px 8px;font-family:inherit}
+.keyline{display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--muted)}
+.keyline i{font-style:normal;display:inline-flex;align-items:center;gap:5px}
+.glyph{width:22px;height:0;border-top:3px solid var(--muted);display:inline-block}
+.glyph.dash{border-top-style:dotted;border-top-width:3px}
+.dotmark{width:9px;height:9px;border-radius:50%;background:var(--muted);display:inline-block}
+
+/* results */
+.results{margin-top:9px;border-top:1px solid var(--line);padding-top:8px}
+.tablescroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12px;min-width:430px}
+th,td{text-align:right;padding:3.5px 7px;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+thead th{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;border-bottom:1px solid var(--line-2);white-space:normal;line-height:1.25;
+  vertical-align:bottom;padding-bottom:5px}
+tbody td{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}
+tbody td:first-child,tbody td:nth-child(2){font-family:var(--sans)}
+tbody td:first-child{font-weight:500}
+tbody tr:last-child td{border-bottom:0}
+.nm{display:inline-flex;align-items:center;gap:7px}
+.tnote{font-size:11px;color:var(--muted);line-height:1.45;margin:7px 0 0}
+.tnote:empty{display:none}
+.fixedtag{color:var(--muted);font-family:var(--sans);font-size:10.5px}
+.se{color:var(--muted);font-size:11px;white-space:nowrap}
+
+/* notes */
+.notes{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
+.note{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;
+  box-shadow:var(--shadow)}
+.note.wide{grid-column:1/-1}
+#scnCard{border-left:3px solid var(--ink)}
+#scnCard.custom{border-left-color:var(--line-2)}
+#scnCard .eyebrow{margin-bottom:2px}
+.note h3{font-family:var(--serif);font-size:17px;font-weight:600;margin:0 0 8px;letter-spacing:-.01em}
+.note p{margin:0 0 10px;color:var(--ink-2);font-size:13.5px}
+.note p:last-child{margin-bottom:0}
+.note ul{margin:0;padding-left:17px;color:var(--ink-2);font-size:13.5px}
+.note li{margin-bottom:6px}
+.note li:last-child{margin-bottom:0}
+.eq{font-family:var(--mono);font-size:12px;background:var(--surface-2);
+  border:1px solid var(--line);border-left:2px solid var(--ink-2);
+  border-radius:0 7px 7px 0;padding:10px 12px;margin:0 0 10px;color:var(--ink);
+  overflow-x:auto;white-space:nowrap}
+.eq .cm{color:var(--muted)}
+.rad{border-top:1px solid currentColor;padding:0 2px}
+.pull{font-family:var(--serif);font-size:15.5px;color:var(--ink);margin:0 0 10px}
+footer{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);
+  font-size:12px;color:var(--muted)}
+footer p{margin:0}
+.credit{margin-top:10px;color:var(--ink-2);font-size:12.5px}
+.credit b{color:var(--ink);font-weight:600}
+footer a{color:inherit;text-decoration:underline;text-underline-offset:2px;
+  text-decoration-color:var(--line-2)}
+footer a:hover{color:var(--ink);text-decoration-color:var(--ink-2)}
+footer a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Protein–ligand binding</p>
+    <h1>Equilibrium Binding Simulation</h1>
+    <p class="deck">Simulate a saturation binding experiment — replicate measurements with Gaussian response noise — then fit it with the <b>specific binding model</b>, the <b>quadratic 1:1 model</b>, or both, and compare what each recovers against the K<sub>d</sub> the data were generated from.</p>
+  </header>
+
+  <div class="layout">
+    <section class="panel main">
+      <div class="chart-head">
+        <h2 class="chart-title" id="chartTitle">Simulated saturation binding</h2>
+        <div class="scaletog" role="group" aria-label="X axis scale">
+          <button id="scaleLog" aria-pressed="true">Log x</button>
+          <button id="scaleLin" aria-pressed="false">Linear x</button>
+        </div>
+      </div>
+      <p class="chart-sub" id="chartSub"></p>
+
+      <svg class="plot" id="plot" viewBox="0 0 860 380" role="img" aria-label="Simulated binding data with fitted curves"></svg>
+
+      <div class="legendrow">
+        <div class="legend" id="legend"></div>
+        <div class="keyline" id="keyline"></div>
+      </div>
+
+      <div class="results">
+        <div class="tablescroll">
+          <table>
+            <thead id="thead"></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <p class="tnote" id="tnote"></p>
+      </div>
+    </section>
+
+    <aside class="panel rail">
+      <p class="sec">Scenarios</p>
+      <div id="scenarios"></div>
+
+      <p class="sec mt">Models to fit</p>
+      <label class="chk">
+        <input type="checkbox" id="mSpecific">
+        <span>Specific binding
+          <span class="sub">f = L<sup>n</sup>/(K + L<sup>n</sup>) — no depletion</span>
+        </span>
+      </label>
+      <div class="hillrow" role="group" aria-label="Hill slope in the specific binding fit">
+        <button id="hillFixed" aria-pressed="true">n fixed at 1</button>
+        <button id="hillFit" aria-pressed="false">n fitted</button>
+      </div>
+      <label class="chk" style="margin-top:8px">
+        <input type="checkbox" id="mQuadratic">
+        <span>Quadratic 1:1
+          <span class="sub">exact mass balance, ligand depletion included</span>
+        </span>
+      </label>
+
+      <p class="sec mt">Shared settings</p>
+      <div class="grid2">
+        <div>
+          <label for="unit">Concentration unit</label>
+          <select id="unit"><option>pM</option><option selected>nM</option><option>µM</option><option>mM</option></select>
+        </div>
+        <div>
+          <label for="npts">Points per curve</label>
+          <input type="number" id="npts" min="4" max="60" step="1" value="12">
+        </div>
+      </div>
+
+      <p class="sec mt">Ligands</p>
+      <div id="ligands"></div>
+      <p class="hint">Each ligand is its own experiment at <b id="nptsEcho">12</b> log-spaced concentrations. <b>Copy A</b> duplicates ligand A's settings, but not its noise.</p>
+    </aside>
+  <div class="notes">
+    <div class="note wide" id="scnCard">
+      <h3 id="scnTitle">Ideal conditions</h3>
+      <p id="scnBody"></p>
+    </div>
+
+    <div class="note">
+      <h3>The two models</h3>
+      <p>Both describe one ligand binding one site. They differ in whether the protein is allowed to consume the ligand it binds.</p>
+      <p class="eq"><span class="cm">specific binding </span>f = L<sub>T</sub><sup>n</sup> ⁄ ( K + L<sub>T</sub><sup>n</sup> )</p>
+      <p class="eq"><span class="cm">quadratic 1:1 </span>f = [ (P<sub>T</sub>+L<sub>T</sub>+K<sub>d</sub>)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; − <span class="rad">√((P<sub>T</sub>+L<sub>T</sub>+K<sub>d</sub>)² − 4P<sub>T</sub>L<sub>T</sub>)</span> ] ⁄ 2P<sub>T</sub></p>
+      <p>The first assumes free ligand equals what you pipetted in. The second solves mass balance for both partners, so it needs [P]<sub>T</sub> and is strictly 1:1 — there is no Hill exponent to fit.</p>
+    </div>
+
+    <div class="note">
+      <h3>EC<sub>50</sub> vs K<sub>d</sub></h3>
+      <p>The EC<sub>50</sub> is the half-saturating concentration — the midpoint of the curve, and what a titration actually measures. It equals the K<sub>d</sub> only when the protein is dilute.</p>
+      <p class="pull">EC<sub>50</sub> = K<sub>d</sub> + n·[P]<sub>T</sub>/2 — at any affinity.</p>
+      <p>The specific binding model has no term for depletion, so its half-saturation K<sup>1/n</sup> drifts toward the EC<sub>50</sub> instead of the true K<sub>d</sub>. Watch it happen on the plot: each model’s fitted K<sub>d</sub> sits below the axis, the true EC<sub>50</sub> on it. When the specific fit’s mark slides up to meet the diamond, depletion has taken over and the number it reports is the EC<sub>50</sub>, not an affinity.</p>
+    </div>
+
+    <div class="note">
+      <h3>The Hill coefficient</h3>
+      <p>Raising <em>n</em> steepens the curve — a switch instead of a dimmer. Half saturation sits where L<sup>n</sup> = K, that is at L = K<sup>1/n</sup>, so <em>K</em> and <em>n</em> set the position together: raise <em>n</em> at fixed <em>K</em> and the curve both steepens and shifts. Hold K<sup>1/n</sup> fixed instead and <em>n</em> changes steepness alone.</p>
+      <p class="eq"><span class="cm">10% to 90% occupancy spans</span>  81<sup>1/n</sup>-fold in L<sub>f</sub></p>
+      <p>That is 81-fold at <em>n</em> = 1 and about 3-fold at <em>n</em> = 4. Fitting cooperative data with <em>n</em> locked at 1 cannot reproduce that steepness, and the fit pays for it in both K and residuals.</p>
+      <p>But <em>n</em> is a shape parameter, not a count of sites. A fitted value of 2.3 does not mean 2.3 of anything — use it to describe steepness, and say so.</p>
+    </div>
+
+    <div class="note">
+      <h3>What this assumes</h3>
+      <ul>
+        <li><b>True equilibrium.</b> Nothing here is kinetic.</li>
+        <li><b>One kind of site.</b> Two independent site classes need a different model.</li>
+        <li><b>Noise is Gaussian and constant</b> across the curve, with no proportional error and no outliers.</li>
+        <li><b>[P]<sub>T</sub> is known and active.</b> The quadratic fit is given the true value; in a real fit an inactive fraction biases it.</li>
+        <li><b>Noise is unbounded.</b> Gaussian error is added to the true fraction with no clipping, so points can land below 0 or above 1 — as a real normalised readout does.</li>
+        <li><b>Units are labels.</b> Everything shares one unit; switching it rescales nothing.</li>
+      </ul>
+    </div>
+
+    <div class="note wide">
+      <h3>About this simulation</h3>
+      <p>The data are generated from exact mass balance using each ligand's true K<sub>d</sub> and Hill coefficient — never from the model being fitted. With <em>n</em> = 1 and dilute protein the two models describe the same curve, so any gap you see between them is depletion.</p>
+      <p>Every curve is sampled at <b id="methPts">12</b> concentrations spaced logarithmically across that ligand's titration range; the Log&nbsp;x / Linear&nbsp;x toggle changes only the display, never the sampling. Points are the replicate mean, and bars are ±1 SD of those replicates, drawn only when there are two or more.</p>
+      <p>Fits minimise the sum of squares over every replicate point, not over the means, with B<sub>max</sub> fixed at 1 and the quadratic fit given the true [P]<sub>T</sub>. Standard errors are asymptotic, from the Gauss–Newton approximation to the least-squares curvature at the optimum. Noise is seeded per ligand, so the same settings always reproduce the same dataset.</p>
+    </div>
+  </div>
+
+  </div>
+
+  <footer>
+    <p class="credit"><b>Kelly Arnett</b> · <a href="https://cmi.hms.harvard.edu/" target="_blank" rel="noopener noreferrer">Center for Macromolecular Interactions (CMI)</a>, Harvard Medical School</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+var COLORS = ['--s1','--s2','--s3'];
+function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function col(i){ return cssVar(COLORS[i]) || '#888'; }
+
+var NPTS_MIN = 4, NPTS_MAX = 60;
+
+var state = {
+  preset: null,
+  unit: 'nM',
+  points: 12,
+  scale: 'log',
+  fitSpecific: true,
+  fitQuadratic: true,
+  fitHill: false,
+  ligands: [
+    { name:'Ligand A', on:true,  pt:0.05, kd:5,   n:1, min:0.05, max:500,   reps:3, sd:0.02 },
+    { name:'Ligand B', on:false, pt:0.05, kd:50,  n:1, min:0.5,  max:5000,  reps:3, sd:0.02 },
+    { name:'Ligand C', on:false, pt:0.05, kd:500, n:1, min:5,    max:50000, reps:3, sd:0.02 }
+  ]
+};
+
+var SCENARIOS = [
+  { key:'ideal', title:'Ideal conditions',
+    blurb:'Protein 100\u00d7 below the Kd, so both models recover the true value. Switch on B and C for the same experiment 10\u00d7 and 100\u00d7 weaker.',
+    apply:function(){
+      state.fitSpecific = true; state.fitQuadratic = true; state.fitHill = false; state.scale = 'log';
+      // each ligand titrated over its own Kd/100 to 100*Kd window, so all three
+      // are sampled identically relative to their own affinity
+      state.ligands[0] = { name:'Ligand A', on:true,  pt:0.05, kd:5,   n:1, min:0.05, max:500,   reps:3, sd:0.02 };
+      state.ligands[1] = { name:'Ligand B', on:false, pt:0.05, kd:50,  n:1, min:0.5,  max:5000,  reps:3, sd:0.02 };
+      state.ligands[2] = { name:'Ligand C', on:false, pt:0.05, kd:500, n:1, min:5,    max:50000, reps:3, sd:0.02 };
+    } },
+  { key:'depletion', title:'Ligand depletion',
+    blurb:'Protein at 100× Kd eats its own ligand. The specific fit reads tens of times too weak; the quadratic recovers it.',
+    apply:function(){
+      state.fitSpecific = true; state.fitQuadratic = true; state.fitHill = false; state.scale = 'log';
+      state.ligands[0] = { name:'Ligand A', on:true, pt:100, kd:1, n:1, min:0.1, max:1000, reps:3, sd:0.02 };
+      state.ligands[1] = { name:'Ligand B', on:false, pt:100, kd:1, n:1, min:0.1, max:1000, reps:3, sd:0.02 };
+      state.ligands[2] = { name:'Ligand C', on:false, pt:100, kd:1, n:1, min:0.1, max:1000, reps:3, sd:0.02 };
+    } },
+  { key:'hill', title:'Cooperativity',
+    blurb:'Three curves at one Kd with Hill slopes 1, 2 and 0.5. Fitted n recovers all three; fix n at 1 and only the n = 1 curve still fits.',
+    apply:function(){
+      state.fitSpecific = true; state.fitQuadratic = false; state.fitHill = true; state.scale = 'log';
+      state.ligands[0] = { name:'n = 1',   on:true, pt:0.05, kd:20, n:1,   min:0.05, max:5000, reps:3, sd:0.02 };
+      state.ligands[1] = { name:'n = 2',   on:true, pt:0.05, kd:20, n:2,   min:0.05, max:5000, reps:3, sd:0.02 };
+      state.ligands[2] = { name:'n = 0.5', on:true, pt:0.05, kd:20, n:0.5, min:0.05, max:5000, reps:3, sd:0.02 };
+    } },
+  { key:'noise', title:'Noise and replicates',
+    blurb:'Heavy noise in duplicate. Raise the replicates and both the error bars and the standard error on K tighten.',
+    apply:function(){
+      state.fitSpecific = true; state.fitQuadratic = true; state.fitHill = false; state.scale = 'log';
+      state.ligands[0] = { name:'Ligand A', on:true, pt:0.05, kd:10, n:1, min:0.1, max:1000, reps:2, sd:0.12 };
+      state.ligands[1] = { name:'Ligand B', on:false, pt:0.05, kd:10, n:1, min:0.1, max:1000, reps:6, sd:0.12 };
+      state.ligands[2] = { name:'Ligand C', on:false, pt:0.05, kd:10, n:1, min:0.1, max:1000, reps:12, sd:0.12 };
+    } }
+];
+
+/* ---------------- models ---------------- */
+
+function thetaHill(Lf, Kd, n){
+  if (Lf <= 0) return 0;
+  var a = Math.pow(Lf / Kd, n);
+  return a / (1 + a);
+}
+function freeLigand(Pt, Lt, Kd, n){
+  if (Lt <= 0) return 0;
+  var lo = 0, hi = Lt, mid;
+  for (var i = 0; i < 60; i++){
+    mid = 0.5 * (lo + hi);
+    if (mid + n * Pt * thetaHill(mid, Kd, n) > Lt) hi = mid; else lo = mid;
+  }
+  return 0.5 * (lo + hi);
+}
+// exact occupancy from mass balance; closed form at n = 1
+function boundFrac(Pt, Lt, Kd, n){
+  if (Pt <= 0) return thetaHill(Lt, Kd, n);
+  if (n === 1){
+    var b = Pt + Lt + Kd;
+    var disc = Math.sqrt(Math.max(b * b - 4 * Pt * Lt, 0));
+    if (b + disc <= 0) return 0;
+    return Math.min(Math.max(2 * Lt / (b + disc), 0), 1);
+  }
+  return thetaHill(freeLigand(Pt, Lt, Kd, n), Kd, n);
+}
+
+/* ---------------- simulated data ---------------- */
+
+function mulberry32(a){
+  return function(){
+    a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function gauss(rng){
+  var u = 1 - rng(), v = rng();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+function simulate(L, seed){
+  var lo = Math.max(num(L.min, 0.01), 1e-9);
+  var hi = Math.max(num(L.max, lo * 100), lo * 1.0001);
+  var reps = Math.max(1, Math.round(num(L.reps, 3)));
+  var sd = Math.max(0, num(L.sd, 0));
+  var np = clampInt(state.points, NPTS_MIN, NPTS_MAX, 12);
+  var rng = mulberry32(seed), pts = [], raw = [], i, r;
+  for (i = 0; i < np; i++){
+    var x = lo * Math.pow(hi / lo, i / (np - 1));
+    var truth = boundFrac(Math.max(0, num(L.pt, 0)), x, L.kd, L.n);
+    var vals = [], sum = 0;
+    for (r = 0; r < reps; r++){
+      var y = truth + gauss(rng) * sd;
+      vals.push(y); sum += y;
+      raw.push({ x: x, y: y });
+    }
+    var mean = sum / reps, s = 0;
+    if (reps > 1){
+      for (r = 0; r < reps; r++) s += (vals[r] - mean) * (vals[r] - mean);
+      s = Math.sqrt(s / (reps - 1));
+    } else s = null;
+    pts.push({ x: x, mean: mean, sd: s });
+  }
+  return { pts: pts, raw: raw, lo: lo, hi: hi };
+}
+
+/* ---------------- fitting ---------------- */
+
+function sse(raw, predict){
+  var s = 0, i, r;
+  for (i = 0; i < raw.length; i++){ r = raw[i].y - predict(raw[i].x); s += r * r; }
+  return s;
+}
+function rmseOf(raw, predict){ return Math.sqrt(sse(raw, predict) / Math.max(1, raw.length)); }
+
+// one parameter: log10 Kd
+function fit1(raw, make){
+  var lo = -6, hi = 8, best = 0, bestS = Infinity, pass, g, step, s;
+  for (pass = 0; pass < 4; pass++){
+    step = (hi - lo) / 160; best = lo; bestS = Infinity;
+    for (g = lo; g <= hi + 1e-12; g += step){
+      s = sse(raw, make(Math.pow(10, g)));
+      if (s < bestS){ bestS = s; best = g; }
+    }
+    lo = best - step; hi = best + step;
+  }
+  return { kd: Math.pow(10, best), sse: bestS };
+}
+// two parameters: log10 Kd and Hill n
+function fit2(raw, make){
+  var kLo = -6, kHi = 8, nLo = 0.2, nHi = 6;
+  var bk = 0, bn = 1, bestS = Infinity, pass, g, h, ks, ns, s;
+  for (pass = 0; pass < 4; pass++){
+    ks = (kHi - kLo) / (pass ? 12 : 56);
+    ns = (nHi - nLo) / (pass ? 10 : 28);
+    bestS = Infinity;
+    for (g = kLo; g <= kHi + 1e-12; g += ks){
+      for (h = nLo; h <= nHi + 1e-12; h += ns){
+        s = sse(raw, make(Math.pow(10, g), h));
+        if (s < bestS){ bestS = s; bk = g; bn = h; }
+      }
+    }
+    kLo = bk - ks; kHi = bk + ks;
+    nLo = Math.max(0.2, bn - ns); nHi = Math.min(6, bn + ns);
+  }
+  return { kd: Math.pow(10, bk), n: bn, sse: bestS };
+}
+
+/* ---- standard errors -------------------------------------------------
+   Asymptotic (Gauss-Newton) errors: cov = s^2 (J'J)^-1, with the residual
+   variance s^2 = SSR/(N - p) taken over every replicate point, not the
+   binned means. So the reported SE shrinks as 1/sqrt(replicates), which is
+   the behaviour the "noise and replicates" scenario is meant to show.
+   J is built by central differences at the optimum.                      */
+
+function jacobian(raw, at, th){
+  var p = th.length, J = [], plus = [], minus = [], h = [], i, j, tp, tm, row;
+  for (j = 0; j < p; j++){
+    h.push(Math.max(Math.abs(th[j]) * 1e-4, 1e-9));
+    tp = th.slice(); tm = th.slice();
+    tp[j] += h[j]; tm[j] -= h[j];
+    plus.push(at(tp)); minus.push(at(tm));
+  }
+  for (i = 0; i < raw.length; i++){
+    row = [];
+    for (j = 0; j < p; j++) row.push((plus[j](raw[i].x) - minus[j](raw[i].x)) / (2 * h[j]));
+    J.push(row);
+  }
+  return J;
+}
+function inv2(A){
+  var p = A.length, d;
+  if (p === 1) return (A[0][0] > 0 && isFinite(A[0][0])) ? [[1 / A[0][0]]] : null;
+  d = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+  if (!isFinite(d) || Math.abs(d) < 1e-300) return null;
+  return [[A[1][1] / d, -A[0][1] / d], [-A[1][0] / d, A[0][0] / d]];
+}
+function covOf(raw, at, th){
+  var p = th.length, N = raw.length, dof = N - p, i, j, k, A = [], s2, J, C;
+  if (dof < 1) return null;
+  s2 = sse(raw, at(th)) / dof;
+  J = jacobian(raw, at, th);
+  for (j = 0; j < p; j++){ A.push([]); for (k = 0; k < p; k++) A[j].push(0); }
+  for (i = 0; i < N; i++)
+    for (j = 0; j < p; j++)
+      for (k = 0; k < p; k++) A[j][k] += J[i][j] * J[i][k];
+  C = inv2(A);
+  if (!C) return null;
+  for (j = 0; j < p; j++) for (k = 0; k < p; k++) C[j][k] *= s2;
+  return C;
+}
+function seAt(C, j){
+  return (C && isFinite(C[j][j]) && C[j][j] > 0) ? Math.sqrt(C[j][j]) : null;
+}
+
+// Specific binding is reported as f = L^n / (K + L^n), so K carries units of
+// concentration^n. The search runs on the half-saturating concentration
+// Khalf = K^(1/n), which is the same curve family but far better conditioned.
+function fitLigand(L, sim){
+  var out = [], pt = Math.max(0, num(L.pt, 0)), f, at, C, g0, g1, v, seK;
+  if (state.fitSpecific){
+    if (state.fitHill){
+      f = fit2(sim.raw, function(kh, n){ return function(x){ return thetaHill(x, kh, n); }; });
+      at = function(t){ return function(x){ return thetaHill(x, t[0], t[1]); }; };
+      C = covOf(sim.raw, at, [f.kd, f.n]);
+      // K = Khalf^n, so its error needs the delta method over both parameters
+      seK = null;
+      if (C){
+        g0 = f.n * Math.pow(f.kd, f.n - 1);
+        g1 = Math.pow(f.kd, f.n) * Math.log(f.kd);
+        v = g0 * g0 * C[0][0] + 2 * g0 * g1 * C[0][1] + g1 * g1 * C[1][1];
+        seK = (isFinite(v) && v > 0) ? Math.sqrt(v) : null;
+      }
+      out.push({ model:'specific', kHalf:f.kd, K:Math.pow(f.kd, f.n), n:f.n, fittedN:true,
+                 seHalf: seAt(C, 0), seK: seK, seN: seAt(C, 1),
+                 rmse: rmseOf(sim.raw, function(x){ return thetaHill(x, f.kd, f.n); }) });
+    } else {
+      f = fit1(sim.raw, function(kh){ return function(x){ return thetaHill(x, kh, 1); }; });
+      at = function(t){ return function(x){ return thetaHill(x, t[0], 1); }; };
+      C = covOf(sim.raw, at, [f.kd]);
+      out.push({ model:'specific', kHalf:f.kd, K:f.kd, n:1, fittedN:false,
+                 seHalf: seAt(C, 0), seK: seAt(C, 0), seN: null,
+                 rmse: rmseOf(sim.raw, function(x){ return thetaHill(x, f.kd, 1); }) });
+    }
+  }
+  if (state.fitQuadratic){
+    f = fit1(sim.raw, function(kd){ return function(x){ return boundFrac(pt, x, kd, 1); }; });
+    at = function(t){ return function(x){ return boundFrac(pt, x, t[0], 1); }; };
+    C = covOf(sim.raw, at, [f.kd]);
+    out.push({ model:'quadratic', kHalf:f.kd, K:f.kd, n:1, fittedN:false,
+               seHalf: seAt(C, 0), seK: seAt(C, 0), seN: null,
+               rmse: rmseOf(sim.raw, function(x){ return boundFrac(pt, x, f.kd, 1); }) });
+  }
+  return out;
+}
+
+/* ---------------- helpers ---------------- */
+
+function num(v, fb){ return (typeof v === 'number' && isFinite(v)) ? v : fb; }
+function clampInt(v, lo, hi, fb){
+  var n = Math.round(num(v, NaN));
+  if (!isFinite(n)) return fb;
+  return Math.min(hi, Math.max(lo, n));
+}
+function fmt(v, sig){
+  if (v === null || v === undefined || !isFinite(v)) return '—';
+  if (v === 0) return '0';
+  sig = sig || 3;
+  var a = Math.abs(v);
+  if (a >= 1e5 || a < 1e-3){
+    var e = v.toExponential(1).split('e');
+    return e[0] + '×10' + sup(parseInt(e[1], 10));
+  }
+  var d = Math.max(0, sig - 1 - Math.floor(Math.log10(a)));
+  var s = v.toFixed(Math.min(d, 6));
+  if (s.indexOf('.') >= 0) s = s.replace(/0+$/, '').replace(/\.$/, '');
+  return s;
+}
+function sup(n){
+  var m = { '-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴',
+            '5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹' };
+  return String(n).split('').map(function(c){ return m[c] || c; }).join('');
+}
+function esc(s){
+  return String(s).replace(/[&<>"]/g, function(c){
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c];
+  });
+}
+function active(){
+  return state.ligands.map(function(l, i){ return { l:l, i:i }; })
+    .filter(function(o){ return o.l.on && o.l.kd > 0 && isFinite(o.l.kd); });
+}
+
+/* ---------------- build ---------------- */
+
+var cache = null;
+
+function build(){
+  var act = active(), groups = [], lo = Infinity, hi = -Infinity;
+
+  act.forEach(function(o){
+    var sim = simulate(o.l, 20260918 + o.i * 7919);
+    lo = Math.min(lo, sim.lo); hi = Math.max(hi, sim.hi);
+    groups.push({
+      idx: o.i, name: o.l.name, L: o.l, sim: sim,
+      fits: fitLigand(o.l, sim),
+      mid: o.l.kd + o.l.n * Math.max(0, num(o.l.pt, 0)) / 2
+    });
+  });
+
+  if (!isFinite(lo) || !isFinite(hi) || hi <= lo){ lo = 0.01; hi = 1000; }
+  cache = { groups: groups, d: [lo, hi] };
+  return cache;
+}
+
+/* ---------------- scales ---------------- */
+
+var W = 860, H = 380, M = { l: 62, r: 28, t: 18, b: 58 };
+var Y0 = -0.09, Y1 = 1.12;
+
+function sx(x, d){
+  var t;
+  if (state.scale === 'log'){
+    t = (Math.log10(Math.max(x, d[0] * 1e-9)) - Math.log10(d[0])) / (Math.log10(d[1]) - Math.log10(d[0]));
+  } else {
+    t = (x - d[0]) / (d[1] - d[0]);
+  }
+  return M.l + Math.max(-0.02, Math.min(1.02, t)) * (W - M.l - M.r);
+}
+function sy(y){
+  var t = (y - Y0) / (Y1 - Y0);
+  return (H - M.b) - Math.max(-0.03, Math.min(1.03, t)) * (H - M.b - M.t);
+}
+function xTicks(d){
+  var t = [], e, v;
+  if (state.scale === 'log'){
+    var lo = Math.floor(Math.log10(d[0])), hi = Math.ceil(Math.log10(d[1]));
+    var decades = hi - lo, step = decades <= 7 ? 1 : Math.ceil(decades / 7);
+    for (e = lo; e <= hi; e += step){
+      v = Math.pow(10, e);
+      if (v >= d[0] * 0.999 && v <= d[1] * 1.001) t.push(v);
+    }
+  } else {
+    var range = d[1] - d[0], raw = range / 6;
+    var mag = Math.pow(10, Math.floor(Math.log10(raw))), nr = raw / mag;
+    var s = nr < 1.5 ? mag : nr < 3 ? 2 * mag : nr < 7 ? 5 * mag : 10 * mag;
+    for (v = Math.ceil(d[0] / s) * s; v <= d[1] + s * 1e-6; v += s) t.push(v);
+  }
+  return t;
+}
+
+/* ---------------- drawing ---------------- */
+
+function pathOf(xs, ys, d){
+  var p = '', i, px, py;
+  for (i = 0; i < xs.length; i++){
+    px = sx(xs[i], d); py = sy(ys[i]);
+    if (!isFinite(px) || !isFinite(py)) throw new Error('non-finite point in curve at x=' + xs[i]);
+    p += (i ? 'L' : 'M') + px.toFixed(2) + ',' + py.toFixed(2);
+  }
+  return p;
+}
+
+function draw(){
+  var c = cache, d = c.d, s = '', i;
+  var ay = H - M.b;
+  // draw C first and A last, so ligand A sits in front
+  var back = c.groups.slice().reverse();
+
+  xTicks(d).forEach(function(t){
+    var x = sx(t, d);
+    s += '<line class="gridline" x1="' + x + '" y1="' + M.t + '" x2="' + x + '" y2="' + ay + '"/>';
+    s += '<text class="tick" x="' + x + '" y="' + (ay + 26) + '" text-anchor="middle">' + esc(fmt(t, 2)) + '</text>';
+  });
+  [0, 0.25, 0.5, 0.75, 1].forEach(function(f){
+    var y = sy(f);
+    s += '<line class="gridline" x1="' + M.l + '" y1="' + y + '" x2="' + (W - M.r) + '" y2="' + y + '"/>';
+    s += '<text class="tick" x="' + (M.l - 11) + '" y="' + (y + 4.5) + '" text-anchor="end">' + f.toFixed(2) + '</text>';
+  });
+  s += '<line class="axisline" x1="' + M.l + '" y1="' + ay + '" x2="' + (W - M.r) + '" y2="' + ay + '"/>';
+  s += '<line class="axisline" x1="' + M.l + '" y1="' + M.t + '" x2="' + M.l + '" y2="' + ay + '"/>';
+
+  var xlab = 'total ligand added [L]ₜ  (' + state.unit + (state.scale === 'log' ? ', log scale)' : ', linear scale)');
+  s += '<text class="alab" x="' + ((M.l + W - M.r) / 2) + '" y="' + (H - 8) + '" text-anchor="middle">' + esc(xlab) + '</text>';
+  s += '<text class="alab" x="' + (-(M.t + ay) / 2) + '" y="15" transform="rotate(-90)" text-anchor="middle">fraction of protein bound</text>';
+
+  var xs = [], N = 200;
+  for (i = 0; i < N; i++){
+    xs.push(state.scale === 'log'
+      ? Math.pow(10, Math.log10(d[0]) + (Math.log10(d[1]) - Math.log10(d[0])) * i / (N - 1))
+      : d[0] + (d[1] - d[0]) * i / (N - 1));
+  }
+
+  // Each fit's own Kd goes below the axis, the true EC50 on it. The marks
+  // carry position only — the numbers are in the table. A fit is placed by its
+  // half-saturating concentration K^(1/n), the only version of K that lives on
+  // the x scale once n is being fitted. Fill follows the model: solid for the
+  // quadratic, hollow for specific binding.
+  back.forEach(function(g){
+    var gc = col(g.idx % 3);
+    // quadratic first so the hollow specific-binding outline lands on top and
+    // stays visible when the two models agree and the marks coincide
+    g.fits.slice().sort(function(a){ return a.model === 'quadratic' ? -1 : 1; }).forEach(function(f){
+      if (!isFinite(f.kHalf) || f.kHalf < d[0] || f.kHalf > d[1]) return;
+      var kx = sx(f.kHalf, d), spec = f.model === 'specific';
+      // the hollow mark is inset, so when the two models agree and the marks
+      // coincide the result reads as one nested glyph rather than a lost mark
+      var w = spec ? 3.2 : 5, top = spec ? ay + 6.2 : ay + 4, base = spec ? ay + 11.2 : ay + 12;
+      s += '<line class="kd-line' + (spec ? ' dotted' : '') + '" x1="' + kx + '" y1="' + M.t +
+           '" x2="' + kx + '" y2="' + (ay + 3) + '" stroke="' + gc + '"/>';
+      s += '<polygon points="' + (kx - w) + ',' + base + ' ' + (kx + w) + ',' + base + ' ' + kx + ',' + top +
+           '" fill="' + (spec ? 'var(--surface)' : gc) + '" stroke="' + gc + '" stroke-width="1.5"/>';
+    });
+    if (g.mid >= d[0] && g.mid <= d[1]){
+      var mx = sx(g.mid, d);
+      s += '<line class="mid-line" x1="' + mx + '" y1="' + M.t + '" x2="' + mx + '" y2="' + ay + '" stroke="' + gc + '"/>';
+      s += '<polygon points="' + mx + ',' + (ay + 1) + ' ' + (mx + 5) + ',' + (ay - 4) + ' ' + mx + ',' + (ay - 9) + ' ' +
+           (mx - 5) + ',' + (ay - 4) + '" fill="var(--surface)" stroke="' + gc + '" stroke-width="1.6"/>';
+    }
+  });
+
+  // fitted curves
+  back.forEach(function(g){
+    var gc = col(g.idx % 3), pt = Math.max(0, num(g.L.pt, 0));
+    g.fits.forEach(function(f){
+      var ys = xs.map(function(x){
+        return f.model === 'quadratic' ? boundFrac(pt, x, f.kHalf, 1) : thetaHill(x, f.kHalf, f.n);
+      });
+      s += '<path class="curve' + (f.model === 'specific' ? ' dotted' : '') + '" d="' +
+           pathOf(xs, ys, d) + '" stroke="' + gc + '"/>';
+    });
+  });
+
+  // measured points last
+  back.forEach(function(g){
+    var gc = col(g.idx % 3);
+    g.sim.pts.forEach(function(p){
+      var px = sx(p.x, d);
+      if (p.sd !== null && p.sd > 0){
+        var y1 = sy(p.mean + p.sd), y2 = sy(p.mean - p.sd);
+        s += '<line class="ebar" x1="' + px + '" y1="' + y1 + '" x2="' + px + '" y2="' + y2 + '" stroke="' + gc + '"/>';
+        s += '<line class="ebar" x1="' + (px - 3.5) + '" y1="' + y1 + '" x2="' + (px + 3.5) + '" y2="' + y1 + '" stroke="' + gc + '"/>';
+        s += '<line class="ebar" x1="' + (px - 3.5) + '" y1="' + y2 + '" x2="' + (px + 3.5) + '" y2="' + y2 + '" stroke="' + gc + '"/>';
+      }
+      s += '<circle class="obs" cx="' + px.toFixed(2) + '" cy="' + sy(p.mean).toFixed(2) + '" r="4.2" fill="' + gc + '"/>';
+    });
+  });
+
+  document.getElementById('plot').innerHTML = s;
+}
+
+/* ---------------- readouts ---------------- */
+
+var MODEL_NAME = { specific: 'Specific binding', quadratic: 'Quadratic 1:1' };
+
+// value with its standard error, the error kept visually subordinate
+function pm(v, se){
+  if (se === null || se === undefined || !isFinite(se) || se <= 0) return fmt(v, 3);
+  return fmt(v, 3) + '<span class="se"> ± ' + fmt(se, 2) + '</span>';
+}
+
+function renderResults(){
+  var c = cache, u = state.unit, rows = '';
+  var thead = document.getElementById('thead'), tbody = document.getElementById('tbody');
+
+  if (!c.groups.length){
+    thead.innerHTML = '';
+    tbody.innerHTML = '<tr><td colspan="8" style="color:var(--muted);font-family:var(--sans)">' +
+      'Switch on a ligand to simulate an experiment.</td></tr>';
+    return;
+  }
+  if (!state.fitSpecific && !state.fitQuadratic){
+    thead.innerHTML = '';
+    tbody.innerHTML = '<tr><td colspan="8" style="color:var(--muted);font-family:var(--sans)">' +
+      'Choose at least one model to fit. The simulated data are plotted above.</td></tr>';
+    return;
+  }
+
+  // K is a concentration whenever n = 1, so the K^(1/n) column only earns its
+  // place while the Hill slope is being fitted
+  var showHalf = state.fitSpecific && state.fitHill;
+  thead.innerHTML = '<tr><th>Ligand</th><th>Model fitted</th>' +
+    '<th>True K<sub>d</sub><br>(' + u + ')</th>' +
+    '<th>EC<sub>50</sub><br>(' + u + ')</th>' +
+    (showHalf
+      ? '<th>K fit<br>(' + u + '<sup>n</sup>)</th><th>K<sub>d</sub> fit<br>K<sup>1/n</sup> (' + u + ')</th>'
+      : '<th>K<sub>d</sub> fit<br>(' + u + ')</th>') +
+    '<th>Hill n</th><th>RMSE</th></tr>';
+
+  c.groups.forEach(function(g){
+    g.fits.forEach(function(f, k){
+      var unitTag = (f.model === 'specific' && f.fittedN)
+        ? ' <span class="fixedtag">' + u + '<sup>n</sup></span>'
+        : ' <span class="fixedtag">' + u + '</span>';
+      rows += '<tr><td>' + (k === 0
+          ? '<span class="nm"><b class="dot" style="background:' + col(g.idx % 3) + '"></b>' + esc(g.name) + '</span>'
+          : '') + '</td>' +
+        '<td>' + MODEL_NAME[f.model] + '</td>' +
+        '<td>' + (k === 0 ? fmt(g.L.kd, 3) : '') + '</td>' +
+        '<td>' + (k === 0 ? fmt(g.mid, 3) : '') + '</td>' +
+        '<td>' + pm(f.K, f.seK) + unitTag + '</td>' +
+        (showHalf ? '<td>' + pm(f.kHalf, f.seHalf) + '</td>' : '') +
+        '<td>' + (f.model === 'quadratic'
+          ? '1 <span class="fixedtag">by model</span>'
+          : (f.fittedN ? pm(f.n, f.seN) : '1 <span class="fixedtag">fixed</span>')) + '</td>' +
+        '<td>' + f.rmse.toFixed(3) + '</td></tr>';
+    });
+  });
+  tbody.innerHTML = rows;
+  document.getElementById('tnote').innerHTML =
+    (showHalf
+      ? 'Specific binding is fitted as f = L<sup>n</sup>/(K + L<sup>n</sup>), so its raw K has units of ' + u +
+        '<sup>n</sup> and is not a K<sub>d</sub>. K<sup>1/n</sup> is the concentration at half saturation \u2014 ' +
+        'the comparable number, and the one marked on the plot. The quadratic model is 1:1, so its K is already a concentration. '
+      : '') +
+    'Each fitted K<sub>d</sub> is marked below the axis \u2014 solid triangle for the quadratic fit, hollow for '+
+    'specific binding. The hollow diamond on the axis is the true EC<sub>50</sub> \u2014 the midpoint of the '+
+    'simulated curve, K<sub>d</sub> + n\u00b7[P]<sub>T</sub>/2, where it really reaches half saturation. '+
+    '\u00b1 values are standard errors of the fitted parameters, taken from the curvature of the ' +
+    'least-squares surface at the optimum. Every replicate point counts towards the residual ' +
+    'variance, so the errors tighten as you add replicates. They measure how tightly <i>this</i> ' +
+    'dataset pins the parameter, and nothing else \u2014 a small error beside a badly wrong K ' +
+    '(try ligand depletion) says the wrong model fits precisely, not that the answer is right.';
+}
+
+function renderChrome(){
+  var sub = document.getElementById('chartSub'), key = document.getElementById('keyline');
+  var bits = [];
+  if (state.fitSpecific) bits.push('specific binding' + (state.fitHill ? ' with n fitted' : ' with n fixed at 1'));
+  if (state.fitQuadratic) bits.push('quadratic 1:1');
+  var reps = cache.groups.map(function(g){ return Math.max(1, Math.round(num(g.L.reps, 3))); });
+  var lead = !reps.length ? ''
+    : Math.max.apply(null, reps) === 1
+      ? 'Each point is a single measurement, so there are no error bars. '
+      : Math.min.apply(null, reps) === 1
+        ? 'Points are replicate means with ±1 SD bars; a single measurement gets no bar. '
+        : 'Points are replicate means with ±1 SD bars. ';
+  sub.innerHTML = lead +
+    (bits.length ? 'Fitted with ' + bits.join(' and ') + '.' : 'No model selected — data only.');
+
+  key.innerHTML =
+    '<i><span class="dotmark"></span>mean ± SD</i>' +
+    (state.fitQuadratic ? '<i><span class="glyph"></span>quadratic 1:1 fit</i>' : '') +
+    (state.fitSpecific ? '<i><span class="glyph dash"></span>specific binding fit</i>' : '') +
+    (state.fitQuadratic ? '<i><span>▲ K<sub>d</sub> from the quadratic fit</span></i>' : '') +
+    (state.fitSpecific ? '<i><span>△ K<sub>d</sub> from the specific fit</span></i>' : '') +
+    '<i><span>◇ EC<sub>50</sub>, on the axis</span></i>';
+
+  document.getElementById('legend').innerHTML = cache.groups.map(function(g){
+    return '<span class="lgi"><b class="dot" style="background:' + col(g.idx % 3) + '"></b>' + esc(g.name) + '</span>';
+  }).join('');
+
+  document.getElementById('mSpecific').checked = state.fitSpecific;
+  document.getElementById('mQuadratic').checked = state.fitQuadratic;
+  document.getElementById('hillFixed').setAttribute('aria-pressed', String(!state.fitHill));
+  document.getElementById('hillFit').setAttribute('aria-pressed', String(state.fitHill));
+  document.getElementById('scaleLog').setAttribute('aria-pressed', String(state.scale === 'log'));
+  document.getElementById('scaleLin').setAttribute('aria-pressed', String(state.scale !== 'log'));
+}
+
+/* ---------------- rail ---------------- */
+
+function renderScenarios(){
+  document.getElementById('scenarios').innerHTML = SCENARIOS.map(function(sc){
+    return '<button class="scn" data-scn="' + sc.key + '" aria-pressed="' + (state.preset === sc.key) + '">' +
+      esc(sc.title) + '</button>';
+  }).join('');
+  document.querySelectorAll('[data-scn]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var sc = SCENARIOS.filter(function(x){ return x.key === btn.getAttribute('data-scn'); })[0];
+      sc.apply();
+      state.preset = sc.key;
+      renderAll();
+    });
+  });
+}
+
+function fieldRow(i, f, label, attrs){
+  return '<div><label for="' + f + i + '">' + label + '</label>' +
+    '<input type="number" id="' + f + i + '" data-f="' + f + '" data-i="' + i + '" ' + attrs + '></div>';
+}
+
+function renderLigands(){
+  var host = document.getElementById('ligands');
+  host.innerHTML = state.ligands.map(function(L, i){
+    var head = '<div class="lig-head">' +
+      '<span class="dot" style="background:' + col(i) + '"></span>' +
+      '<input type="text" data-f="name" data-i="' + i + '" value="' + esc(L.name) + '" aria-label="Ligand name">' +
+      (i > 0 && L.on
+        ? '<button class="cpy" data-cp="' + i + '" title="Copy every variable from ' + esc(state.ligands[0].name) +
+          '">Copy A</button>'
+        : '') +
+      '<label class="sw"><input type="checkbox" data-f="on" data-i="' + i + '"' + (L.on ? ' checked' : '') +
+        ' aria-label="Include ' + esc(L.name) + '"><span></span></label></div>';
+    if (!L.on) return '<div class="lig off">' + head + '</div>';
+    var body = '<div class="grid4">' +
+        fieldRow(i, 'pt', '[P]<sub>T</sub>', 'value="' + L.pt + '" min="0" step="any"') +
+        fieldRow(i, 'kd', 'K<sub>d</sub>', 'value="' + L.kd + '" min="0" step="any"') +
+        fieldRow(i, 'n', 'Hill n', 'value="' + L.n + '" min="0.2" max="6" step="0.1"') +
+        fieldRow(i, 'sd', 'Noise SD', 'value="' + L.sd + '" min="0" step="0.01"') +
+      '</div><div class="grid3" style="margin-top:4px">' +
+        fieldRow(i, 'min', 'Min [L]', 'value="' + L.min + '" min="0" step="any"') +
+        fieldRow(i, 'max', 'Max [L]', 'value="' + L.max + '" min="0" step="any"') +
+        fieldRow(i, 'reps', 'Replicates', 'value="' + L.reps + '" min="1" max="12" step="1"') +
+      '</div>';
+    return '<div class="lig on">' + head + body + '</div>';
+  }).join('');
+
+  host.querySelectorAll('.cpy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var i = +btn.getAttribute('data-cp'), A = state.ligands[0], L = state.ligands[i];
+      ['pt','kd','n','min','max','reps','sd'].forEach(function(f){ L[f] = A[f]; });
+      touched();
+      renderAll();
+    });
+  });
+
+  host.querySelectorAll('input').forEach(function(el){
+    el.addEventListener('input', function(){
+      var i = +el.getAttribute('data-i'), f = el.getAttribute('data-f'), L = state.ligands[i];
+      if (f === 'on'){ L.on = el.checked; renderAll(); return; }
+      if (f === 'name'){ L.name = el.value || ('Ligand ' + 'ABC'[i]); redraw(); return; }
+      if (f === 'n') L.n = Math.max(0.2, Math.min(6, parseFloat(el.value) || 1));
+      else if (f === 'reps') L.reps = Math.max(1, Math.min(12, Math.round(parseFloat(el.value) || 1)));
+      else L[f] = parseFloat(el.value);
+      touched();
+      redraw();
+    });
+  });
+}
+
+function renderScenarioCard(){
+  var card = document.getElementById('scnCard');
+  var sc = SCENARIOS.filter(function(x){ return x.key === state.preset; })[0];
+  if (sc){
+    card.classList.remove('custom');
+    document.getElementById('scnTitle').textContent = sc.title;
+    document.getElementById('scnBody').innerHTML = sc.blurb;
+  } else {
+    card.classList.add('custom');
+    document.getElementById('scnTitle').textContent = 'Custom settings';
+    document.getElementById('scnBody').innerHTML =
+      'You have changed a variable, so this no longer matches a scenario. ' +
+      'The plot and the table follow whatever is in the panel; pick a scenario above to reload one of the worked examples.';
+  }
+}
+
+// Called when a value a scenario defines is edited: the preset no longer
+// describes what is on screen, so it is released. Showing or hiding a ligand
+// and renaming one are deliberately not routed here.
+function touched(){
+  if (state.preset === null) return;
+  state.preset = null;
+  document.querySelectorAll('[data-scn]').forEach(function(b){ b.setAttribute('aria-pressed', 'false'); });
+  renderScenarioCard();
+}
+
+/* ---------------- render ---------------- */
+
+function redraw(){
+  build();
+  draw();
+  renderChrome();
+  renderResults();
+}
+// the point count appears in two prose spots; keep both in step
+function setPointEchoes(n){
+  document.getElementById('nptsEcho').textContent = n;
+  document.getElementById('methPts').textContent = n;
+}
+
+function renderAll(){
+  renderLigands();
+  document.querySelectorAll('[data-scn]').forEach(function(b){
+    b.setAttribute('aria-pressed', String(b.getAttribute('data-scn') === state.preset));
+  });
+  document.getElementById('unit').value = state.unit;
+  document.getElementById('npts').value = state.points;
+  setPointEchoes(state.points);
+  renderScenarioCard();
+  redraw();
+}
+
+/* ---------------- events ---------------- */
+
+document.getElementById('mSpecific').addEventListener('change', function(){
+  state.fitSpecific = this.checked; touched(); redraw();
+});
+document.getElementById('mQuadratic').addEventListener('change', function(){
+  state.fitQuadratic = this.checked; touched(); redraw();
+});
+document.getElementById('hillFixed').addEventListener('click', function(){
+  state.fitHill = false; touched(); redraw();
+});
+document.getElementById('hillFit').addEventListener('click', function(){
+  state.fitHill = true; touched(); redraw();
+});
+document.getElementById('unit').addEventListener('change', function(){
+  state.unit = this.value; touched(); redraw();
+});
+document.getElementById('npts').addEventListener('input', function(){
+  // let the box be briefly empty or out of range while typing; only commit
+  // a clean integer, and snap the field back on blur
+  var n = clampInt(parseFloat(this.value), NPTS_MIN, NPTS_MAX, NaN);
+  if (!isFinite(n) || n !== Math.round(parseFloat(this.value))) return;
+  state.points = n;
+  setPointEchoes(n);
+  touched(); redraw();
+});
+document.getElementById('npts').addEventListener('blur', function(){
+  var n = clampInt(parseFloat(this.value), NPTS_MIN, NPTS_MAX, state.points);
+  this.value = n;
+  if (n === state.points) return;
+  state.points = n;
+  setPointEchoes(n);
+  touched(); redraw();
+});
+document.getElementById('scaleLog').addEventListener('click', function(){ state.scale = 'log'; redraw(); });
+document.getElementById('scaleLin').addEventListener('click', function(){ state.scale = 'linear'; redraw(); });
+
+var mq = window.matchMedia('(prefers-color-scheme: dark)');
+if (mq.addEventListener) mq.addEventListener('change', function(){ setTimeout(redraw, 30); });
+new MutationObserver(function(){ redraw(); })
+  .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+renderScenarios();
+SCENARIOS[0].apply();
+state.preset = SCENARIOS[0].key;
+renderAll();
+})();
+</script>
+
+</body></html>
