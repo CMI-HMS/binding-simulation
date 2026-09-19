@@ -1,8 +1,18 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  :root{color-scheme:light dark}
+  html,body{margin:0}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+</style>
 <title>Equilibrium Binding Simulation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 :root{
   --plane:#EDF1F0;
@@ -22,7 +32,6 @@
   --field:#FFFFFF;
   --shadow:0 1px 2px rgba(16,22,21,.05);
   --sans:"Archivo",-apple-system,"Segoe UI",Roboto,sans-serif;
-  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
   --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
 }
 @media (prefers-color-scheme:dark){
@@ -50,8 +59,8 @@ body{background:var(--plane);color:var(--ink);font-family:var(--sans);
 /* header */
 .eyebrow{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
   color:var(--muted);margin:0 0 4px}
-h1{font-family:var(--serif);font-weight:600;font-size:clamp(19px,2.2vw,23px);
-  line-height:1.2;letter-spacing:-.008em;margin:0;text-wrap:balance}
+h1{font-family:var(--sans);font-weight:700;font-size:clamp(19px,2.2vw,23px);
+  line-height:1.2;letter-spacing:-.018em;margin:0;text-wrap:balance}
 .deck{margin:7px 0 0;color:var(--ink-2);font-size:13.5px}
 .deck b{color:var(--ink);font-weight:600}
 header{border-bottom:1px solid var(--line);padding-bottom:11px;margin-bottom:12px}
@@ -138,12 +147,12 @@ input:focus,select:focus{outline:2px solid var(--ink);outline-offset:-1px;border
 /* chart */
 .chart-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
   margin-bottom:3px;flex-wrap:wrap}
-.chart-title{font-family:var(--serif);font-size:15px;font-weight:600;margin:0}
-.chart-sub{font-size:11.5px;color:var(--muted);margin:0 0 5px;line-height:1.45}
+.chart-title{font-family:var(--sans);font-size:16.5px;font-weight:700;letter-spacing:-.014em;margin:0}
+.chart-sub{font-size:12.5px;color:var(--muted);margin:0 0 6px;line-height:1.45}
 .scaletog{display:inline-flex;gap:2px;background:var(--surface-2);border:1px solid var(--line);
   border-radius:7px;padding:2px}
-.scaletog button{font:inherit;font-size:11.5px;font-weight:500;color:var(--ink-2);background:none;
-  border:0;border-radius:5px;padding:3px 9px;cursor:pointer}
+.scaletog button{font:inherit;font-size:12.5px;font-weight:500;color:var(--ink-2);background:none;
+  border:0;border-radius:5px;padding:3px 10px;cursor:pointer}
 .scaletog button[aria-pressed="true"]{background:var(--ink);color:var(--plane)}
 .scaletog button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 svg.plot{display:block;width:100%;height:auto}
@@ -151,8 +160,8 @@ svg.plot{display:block;width:100%;height:auto}
    ~3.5:1, tick numbers as real text at ~9:1, and the axis title in full ink. */
 .gridline{stroke:var(--grid);stroke-width:1}
 .axisline{stroke:var(--axis);stroke-width:1.5;shape-rendering:crispEdges}
-.tick{fill:var(--tick);font-family:var(--mono);font-size:13px;font-weight:500}
-.alab{fill:var(--ink);font-family:var(--sans);font-size:14px;font-weight:600}
+.tick{fill:var(--tick);font-family:var(--mono);font-size:14.5px;font-weight:500}
+.alab{fill:var(--ink);font-family:var(--sans);font-size:15.5px;font-weight:600}
 .curve{fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 .curve.dotted{stroke-dasharray:1 5.5}
 .ebar{stroke-width:1.6;stroke-linecap:round}
@@ -164,10 +173,10 @@ svg.plot{display:block;width:100%;height:auto}
 /* legend */
 .legendrow{display:flex;flex-wrap:wrap;align-items:center;gap:5px 16px;margin-top:6px}
 .legend{display:flex;flex-wrap:wrap;gap:5px}
-.lgi{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-2);
+.lgi{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-2);
   background:var(--surface-2);border:1px solid var(--line);border-radius:999px;
   padding:2px 9px 2px 8px;font-family:inherit}
-.keyline{display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--muted)}
+.keyline{display:flex;flex-wrap:wrap;gap:13px;font-size:12px;color:var(--muted)}
 .keyline i{font-style:normal;display:inline-flex;align-items:center;gap:5px}
 .glyph{width:22px;height:0;border-top:3px solid var(--muted);display:inline-block}
 .glyph.dash{border-top-style:dotted;border-top-width:3px}
@@ -176,10 +185,10 @@ svg.plot{display:block;width:100%;height:auto}
 /* results */
 .results{margin-top:9px;border-top:1px solid var(--line);padding-top:8px}
 .tablescroll{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:12px;min-width:430px}
-th,td{text-align:right;padding:3.5px 7px;border-bottom:1px solid var(--line);white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:470px}
+th,td{text-align:right;padding:4.5px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
 th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
-thead th{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+thead th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
   font-weight:600;border-bottom:1px solid var(--line-2);white-space:normal;line-height:1.25;
   vertical-align:bottom;padding-bottom:5px}
 tbody td{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}
@@ -187,10 +196,10 @@ tbody td:first-child,tbody td:nth-child(2){font-family:var(--sans)}
 tbody td:first-child{font-weight:500}
 tbody tr:last-child td{border-bottom:0}
 .nm{display:inline-flex;align-items:center;gap:7px}
-.tnote{font-size:11px;color:var(--muted);line-height:1.45;margin:7px 0 0}
+.tnote{font-size:12px;color:var(--muted);line-height:1.5;margin:8px 0 0}
 .tnote:empty{display:none}
-.fixedtag{color:var(--muted);font-family:var(--sans);font-size:10.5px}
-.se{color:var(--muted);font-size:11px;white-space:nowrap}
+.fixedtag{color:var(--muted);font-family:var(--sans);font-size:11.5px}
+.se{color:var(--muted);font-size:12px;white-space:nowrap}
 
 /* notes */
 .notes{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
@@ -209,7 +218,7 @@ tbody tr:last-child td{border-bottom:0}
 #scnCard{border-left:3px solid var(--ink)}
 #scnCard.custom{border-left-color:var(--line-2)}
 #scnCard .eyebrow{margin-bottom:2px}
-.note h3{font-family:var(--serif);font-size:17px;font-weight:600;margin:0 0 8px;letter-spacing:-.01em}
+.note h3{font-family:var(--sans);font-size:15.5px;font-weight:700;margin:0 0 8px;letter-spacing:-.014em}
 .note p{margin:0 0 10px;color:var(--ink-2);font-size:13.5px}
 .note p:last-child{margin-bottom:0}
 .note ul{margin:0;padding-left:17px;color:var(--ink-2);font-size:13.5px}
@@ -221,7 +230,8 @@ tbody tr:last-child td{border-bottom:0}
   overflow-x:auto;white-space:nowrap}
 .eq .cm{color:var(--muted)}
 .rad{border-top:1px solid currentColor;padding:0 2px}
-.pull{font-family:var(--serif);font-size:15.5px;color:var(--ink);margin:0 0 10px}
+.note p.pull{font-family:var(--sans);font-size:14.5px;font-weight:600;letter-spacing:-.005em;
+  color:var(--ink);margin:0 0 10px}
 footer{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);
   font-size:12px;color:var(--muted)}
 footer p{margin:0}
@@ -234,6 +244,8 @@ footer a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-ra
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
+</head>
+<body>
 <div class="wrap">
   <header>
     <p class="eyebrow">Protein–ligand binding</p>
@@ -277,11 +289,11 @@ footer a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-ra
       <p class="sec mt">Models to fit</p>
       <label class="chk">
         <input type="checkbox" id="mSpecific">
-        <span>Specific binding
+        <span id="mSpecificName">Specific binding
           <span class="sub">f = L<sup>n</sup>/(K + L<sup>n</sup>) — no depletion</span>
         </span>
       </label>
-      <div class="hillrow" role="group" aria-label="Hill slope in the specific binding fit">
+      <div class="hillrow" role="group" aria-label="Hill slope in the no-depletion fit">
         <button id="hillFixed" aria-pressed="true">n fixed at 1</button>
         <button id="hillFit" aria-pressed="false">n fitted</button>
       </div>
@@ -353,7 +365,7 @@ footer a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-ra
       <h3>About this simulation</h3>
       <p>The data are generated from exact mass balance using each ligand's true K<sub>d</sub> and Hill coefficient — never from the model being fitted. With <em>n</em> = 1 and dilute protein the two models describe the same curve, so any gap you see between them is depletion.</p>
       <p>Every curve is sampled at <b id="methPts">12</b> concentrations spaced logarithmically across that ligand's titration range; the Log&nbsp;x / Linear&nbsp;x toggle changes only the display, never the sampling. Points are the replicate mean, and bars are ±1 SD of those replicates, drawn only when there are two or more.</p>
-      <p>Fits minimise the sum of squares over every replicate point, not over the means, with B<sub>max</sub> fixed at 1 and the quadratic fit given the true [P]<sub>T</sub>. Standard errors are asymptotic, from the Gauss–Newton approximation to the least-squares curvature at the optimum. Noise is seeded per ligand, so the same settings always reproduce the same dataset.</p>
+      <p>Fits minimise the sum of squares over every replicate point, not over the means, with B<sub>max</sub> fixed at 1 and the quadratic fit given the true [P]<sub>T</sub>. Standard errors are asymptotic, from the Gauss–Newton approximation to the least-squares curvature at the optimum; they tighten as you add replicates, and they say how tightly <em>this</em> dataset pins the parameter and nothing else — a small error beside a badly wrong K means the wrong model fits precisely, not that the answer is right. Noise is seeded per ligand, so the same settings always reproduce the same dataset.</p>
     </div>
   </div>
 
@@ -685,7 +697,7 @@ function build(){
 
 /* ---------------- scales ---------------- */
 
-var W = 860, H = 380, M = { l: 62, r: 28, t: 18, b: 58 };
+var W = 860, H = 380, M = { l: 68, r: 28, t: 18, b: 62 };
 
 // The viewBox is matched to the element's real pixel size before every draw.
 // Without this a wide window would scale the whole coordinate system, blowing
@@ -754,12 +766,12 @@ function draw(){
   xTicks(d).forEach(function(t){
     var x = sx(t, d);
     s += '<line class="gridline" x1="' + x + '" y1="' + M.t + '" x2="' + x + '" y2="' + ay + '"/>';
-    s += '<text class="tick" x="' + x + '" y="' + (ay + 26) + '" text-anchor="middle">' + esc(fmt(t, 2)) + '</text>';
+    s += '<text class="tick" x="' + x + '" y="' + (ay + 28) + '" text-anchor="middle">' + esc(fmt(t, 2)) + '</text>';
   });
   [0, 0.25, 0.5, 0.75, 1].forEach(function(f){
     var y = sy(f);
     s += '<line class="gridline" x1="' + M.l + '" y1="' + y + '" x2="' + (W - M.r) + '" y2="' + y + '"/>';
-    s += '<text class="tick" x="' + (M.l - 11) + '" y="' + (y + 4.5) + '" text-anchor="end">' + f.toFixed(2) + '</text>';
+    s += '<text class="tick" x="' + (M.l - 12) + '" y="' + (y + 5) + '" text-anchor="end">' + f.toFixed(2) + '</text>';
   });
   s += '<line class="axisline" x1="' + M.l + '" y1="' + ay + '" x2="' + (W - M.r) + '" y2="' + ay + '"/>';
   s += '<line class="axisline" x1="' + M.l + '" y1="' + M.t + '" x2="' + M.l + '" y2="' + ay + '"/>';
@@ -835,7 +847,17 @@ function draw(){
 
 /* ---------------- readouts ---------------- */
 
-var MODEL_NAME = { specific: 'Specific binding', quadratic: 'Quadratic 1:1' };
+// With n pinned at 1 this is the textbook specific binding equation; once n is
+// fitted it is the Hill equation, so it is named for what it actually is.
+// 'cap' for a label or table cell, 'the' for running prose, 'short' for a key
+function specificName(style){
+  var hill = state.fitHill;
+  if (style === 'the')   return hill ? 'the Hill model' : 'specific binding';
+  if (style === 'low')   return hill ? 'Hill model' : 'specific binding';
+  if (style === 'short') return hill ? 'Hill' : 'specific';
+  return hill ? 'Hill model' : 'Specific binding';
+}
+var MODEL_NAME = { quadratic: 'Quadratic 1:1' };
 
 // value with its standard error, the error kept visually subordinate
 function pm(v, se){
@@ -879,7 +901,7 @@ function renderResults(){
       rows += '<tr><td>' + (k === 0
           ? '<span class="nm"><b class="dot" style="background:' + col(g.idx % 3) + '"></b>' + esc(g.name) + '</span>'
           : '') + '</td>' +
-        '<td>' + MODEL_NAME[f.model] + '</td>' +
+        '<td>' + (f.model === 'specific' ? specificName('cap') : MODEL_NAME[f.model]) + '</td>' +
         '<td>' + (k === 0 ? fmt(g.L.kd, 3) : '') + '</td>' +
         '<td>' + (k === 0 ? fmt(g.mid, 3) : '') + '</td>' +
         '<td>' + pm(f.K, f.seK) + unitTag + '</td>' +
@@ -893,24 +915,21 @@ function renderResults(){
   tbody.innerHTML = rows;
   document.getElementById('tnote').innerHTML =
     (showHalf
-      ? 'Specific binding is fitted as f = L<sup>n</sup>/(K + L<sup>n</sup>), so its raw K has units of ' + u +
+      ? 'The Hill model is fitted as f = L<sup>n</sup>/(K + L<sup>n</sup>), so its raw K has units of ' + u +
         '<sup>n</sup> and is not a K<sub>d</sub>. K<sup>1/n</sup> is the concentration at half saturation \u2014 ' +
         'the comparable number, and the one marked on the plot. The quadratic model is 1:1, so its K is already a concentration. '
       : '') +
     'Each fitted K<sub>d</sub> is marked below the axis \u2014 solid triangle for the quadratic fit, hollow for '+
-    'specific binding. The hollow diamond on the axis is the true EC<sub>50</sub> \u2014 the midpoint of the '+
+    '' + specificName('the') + '. The hollow diamond on the axis is the true EC<sub>50</sub> \u2014 the midpoint of the '+
     'simulated curve, K<sub>d</sub> + n\u00b7[P]<sub>T</sub>/2, where it really reaches half saturation. '+
     '\u00b1 values are standard errors of the fitted parameters, taken from the curvature of the ' +
-    'least-squares surface at the optimum. Every replicate point counts towards the residual ' +
-    'variance, so the errors tighten as you add replicates. They measure how tightly <i>this</i> ' +
-    'dataset pins the parameter, and nothing else \u2014 a small error beside a badly wrong K ' +
-    '(try ligand depletion) says the wrong model fits precisely, not that the answer is right.';
+    'least-squares surface at the optimum.';
 }
 
 function renderChrome(){
   var sub = document.getElementById('chartSub'), key = document.getElementById('keyline');
   var bits = [];
-  if (state.fitSpecific) bits.push('specific binding' + (state.fitHill ? ' with n fitted' : ' with n fixed at 1'));
+  if (state.fitSpecific) bits.push(state.fitHill ? 'the Hill model' : 'specific binding with n fixed at 1');
   if (state.fitQuadratic) bits.push('quadratic 1:1');
   var reps = cache.groups.map(function(g){ return Math.max(1, Math.round(num(g.L.reps, 3))); });
   var lead = !reps.length ? ''
@@ -925,15 +944,16 @@ function renderChrome(){
   key.innerHTML =
     '<i><span class="dotmark"></span>mean ± SD</i>' +
     (state.fitQuadratic ? '<i><span class="glyph"></span>quadratic 1:1 fit</i>' : '') +
-    (state.fitSpecific ? '<i><span class="glyph dash"></span>specific binding fit</i>' : '') +
+    (state.fitSpecific ? '<i><span class="glyph dash"></span>' + specificName('low') + ' fit</i>' : '') +
     (state.fitQuadratic ? '<i><span>▲ K<sub>d</sub> from the quadratic fit</span></i>' : '') +
-    (state.fitSpecific ? '<i><span>△ K<sub>d</sub> from the specific fit</span></i>' : '') +
+    (state.fitSpecific ? '<i><span>△ K<sub>d</sub> from the ' + specificName('short') + ' fit</span></i>' : '') +
     '<i><span>◇ EC<sub>50</sub>, on the axis</span></i>';
 
   document.getElementById('legend').innerHTML = cache.groups.map(function(g){
     return '<span class="lgi"><b class="dot" style="background:' + col(g.idx % 3) + '"></b>' + esc(g.name) + '</span>';
   }).join('');
 
+  document.getElementById('mSpecificName').firstChild.nodeValue = specificName('cap') + ' ';
   document.getElementById('mSpecific').checked = state.fitSpecific;
   document.getElementById('mQuadratic').checked = state.fitQuadratic;
   document.getElementById('hillFixed').setAttribute('aria-pressed', String(!state.fitHill));
@@ -1119,5 +1139,5 @@ state.preset = SCENARIOS[0].key;
 renderAll();
 })();
 </script>
-
-</body></html>
+</body>
+</html>
