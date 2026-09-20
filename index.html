@@ -256,17 +256,24 @@ th.gl,td.gl{border-left:1px solid var(--line)}
 .fixedtag{color:var(--muted);font-family:var(--sans);font-size:11.5px}
 .se{color:var(--muted);font-size:12px;white-space:nowrap}
 
-/* notes: the three explainers share a row, the long card runs under them */
+/* notes: three explainers share the top row, the glossary and the about card
+   share the one below. Six tracks, so 3-up and 2-up both divide evenly. */
 .notes{margin-top:14px;display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
 @media (min-width:820px){ .notes{grid-template-columns:repeat(2,minmax(0,1fr))} }
-@media (min-width:1180px){ .notes{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (min-width:1180px){
+  .notes{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .notes > .note{grid-column:span 2}
+  .notes > .note.wide{grid-column:span 3}
+}
 .note{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;
   box-shadow:var(--shadow)}
 .note.wide{grid-column:1/-1}
 /* inside the wide card: prose beside the assumptions once there is room for
    two readable measures, stacked below that */
-.split{display:grid;grid-template-columns:minmax(0,1fr);gap:10px 34px}
-@media (min-width:820px){ .split{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
+/* Both lower cards set their text in a single column - the pairing that reads
+   as two columns is the two cards beside each other, not the text inside them. */
+.split{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.terms li{margin-bottom:6px}
 .split h4{font-family:var(--sans);font-size:12.5px;font-weight:600;letter-spacing:.04em;
   text-transform:uppercase;color:var(--muted);margin:0 0 7px}
 @media (min-width:1500px){ .deck{max-width:118ch} }
@@ -309,7 +316,7 @@ footer a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-ra
 <div class="wrap">
   <header>
     <h1>Equilibrium Binding Simulation</h1>
-    <p class="deck">Choose a scenario or build your own to simulate a binding experiment, then fit it with the <b>specific binding model</b>, the <b>quadratic 1:1 model</b>.</p>
+    <p class="deck">Choose a scenario or build your own to simulate a binding experiment, then fit it with the <b>specific binding model</b> and/or the <b>quadratic 1:1 model</b>.</p>
   </header>
 
   <div class="layout">
@@ -340,6 +347,7 @@ footer a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-ra
     <section class="panel main">
       <div class="chart-head">
         <div class="export">
+          <button id="resim" title="Draw a fresh set of noise for every ligand, leaving all the settings as they are">Resimulate</button>
           <button id="csvCopy" title="Copy the simulated points to the clipboard, ready to paste into a spreadsheet">Copy simulated data</button>
           <span class="said" id="csvSaid" role="status" aria-live="polite"></span>
         </div>
@@ -413,24 +421,39 @@ footer a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-ra
       <p>The <em>n</em> term, or Hill coefficient, is a measure of cooperativity. At <b><em>n</em> = 1</b> the sites are independent — there is either one binding site, or no cooperativity between sites. When <b><em>n</em> &gt; 1</b> there is positive cooperativity: each binding event makes the next easier. When <b><em>n</em> &lt; 1</b> there is negative cooperativity. <em>n</em> is a measure of the steepness of the curve, not a count of sites or a stoichiometry. With <em>n</em> fixed at 1 the fitted K <em>is</em> a K<sub>d</sub>; once <em>n</em> is fitted, K has units of concentration<sup>n</sup> and is no longer a K<sub>d</sub> — the half-saturating concentration is then K<sup>1/n</sup>. 10% to 90% occupancy spans <b>81<sup>1/n</sup>-fold in L<sub>f</sub></b>.</p>
     </div>
 
+    <div class="note wide" id="termsCard">
+      <h3>Key terms</h3>
+      <ul class="terms">
+  <li><b>[P]<sub>T</sub></b> — total protein concentration, the same at every point of the curve.</li>
+  <li><b>Min [L]</b> and <b>Max [L]</b> — the first and last total ligand concentrations; the points are spaced logarithmically between them.</li>
+  <li><b>Noise SD</b> — the standard deviation of the Gaussian error added to each replicate, in fraction bound.</li>
+  <li><b>EC<sub>50</sub></b> — the concentration at which fraction bound is ½: the true midpoint of the curve, K<sub>d</sub> + n·[P]<sub>T</sub>/2.</li>
+  <li><b>K<sub>d</sub> fit</b> — the equilibrium dissociation constant the model returns.</li>
+  <li><b>K fit</b> — the Hill model's raw fitted constant, in concentration<sup>n</sup>; shown only while <em>n</em> is fitted, when its K<sub>d</sub> is K<sup>1/n</sup>.</li>
+  <li><b>Hill n</b> — the cooperativity the fit recovered.</li>
+  <li><b>±</b> — asymptotic standard error on the value before it. How tightly <em>this</em> dataset pins that parameter. A wrong model can fit precisely.</li>
+  <li><b>RMSE</b> — root-mean-square residual between the curve and every replicate point, in fraction bound. A correct model lands near the noise SD.</li>
+      </ul>
+    </div>
+
     <div class="note wide" id="aboutCard">
       <h3>About this simulation</h3>
       <div class="split">
-      <div>
-      <h4>How it works</h4>
-      <p>The data are generated from exact mass balance using each ligand's true K<sub>d</sub> and Hill coefficient — never from the model being fitted — so with <em>n</em> = 1 and dilute protein the two models describe the same curve and any gap between them is depletion. Fits minimise the sum of squares over every replicate point, not over the means, with B<sub>max</sub> fixed at 1, the quadratic fit given the true [P]<sub>T</sub>, and noise seeded per ligand so the same settings always reproduce the same dataset. The ± values are asymptotic standard errors, from the Gauss–Newton approximation to the least-squares curvature at the optimum: they tighten as you add replicates, and they say how tightly <em>this</em> dataset pins the parameter and nothing else — a small error beside a badly wrong K means the wrong model fits precisely, not that the answer is right.</p>
-      </div>
-      <div>
-      <h4>What it assumes</h4>
-      <ul>
-        <li><b>True equilibrium.</b> Nothing here is kinetic.</li>
-        <li><b>One kind of site.</b> Two independent site classes need a different model.</li>
-        <li><b>Noise is Gaussian and constant</b> across the curve, with no proportional error and no outliers.</li>
-        <li><b>[P]<sub>T</sub> is known and active.</b> The quadratic fit is given the true value; in a real fit an inactive fraction biases it.</li>
-        <li><b>Noise is unbounded.</b> Gaussian error is added to the true fraction with no clipping, so points can land below 0 or above 1 — as a real normalised readout does.</li>
-        <li><b>Units are labels.</b> Everything shares one unit; switching it rescales nothing.</li>
-      </ul>
-      </div>
+        <div>
+          <h4>How it works</h4>
+          <p>Each dataset is simulated from exact mass balance, using the true ligand K<sub>d</sub> and Hill coefficient. Gaussian error is added to every replicate and ligand each time you change the experiment, the way a repeat experiment would. Both models are then fitted to those points by least squares, over every replicate rather than over the means.</p>
+        </div>
+        <div>
+          <h4>What it assumes</h4>
+          <ul>
+            <li><b>True equilibrium.</b> Nothing here is kinetic.</li>
+            <li><b>One kind of site.</b> Two independent sites need a different model.</li>
+            <li><b>B<sub>max</sub> is fixed at 1.</b> Every curve saturates at full occupancy; a real fit floats it.</li>
+            <li><b>Noise is Gaussian, constant and unbounded.</b> One SD applies across the whole curve, with no proportional error and no outliers, so points can land below 0 or above 1.</li>
+            <li><b>[P]<sub>T</sub> is known and active.</b> An inactive fraction biases the fit.</li>
+            <li><b>Units are labels.</b> Everything shares one unit; switching it rescales nothing.</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -533,6 +556,17 @@ function boundFrac(Pt, Lt, Kd, n){
 }
 
 /* ---------------- simulated data ---------------- */
+
+// A run of the experiment is one draw of the noise. Each ligand gets its own
+// seed, drawn fresh every time the experiment itself changes - a parameter, a
+// replicate count, a scenario - so repeating a setting is a new experiment, not
+// a replay of the last one. Changing only the models to fit, the axis or a
+// ligand's name re-fits and redraws the SAME points, so you are comparing fits
+// rather than chasing new noise.
+var seeds = [0, 1, 2];
+function newSeed(){ return (Math.random() * 4294967296) >>> 0; }
+function reseed(){ seeds = seeds.map(newSeed); }
+reseed();
 
 function mulberry32(a){
   return function(){
@@ -747,7 +781,7 @@ function build(){
   var act = active(), groups = [], lo = Infinity, hi = -Infinity;
 
   act.forEach(function(o){
-    var sim = simulate(o.l, 20260918 + o.i * 7919);
+    var sim = simulate(o.l, seeds[o.i]);
     lo = Math.min(lo, sim.lo); hi = Math.max(hi, sim.hi);
     groups.push({
       idx: o.i, name: o.l.name, L: o.l, sim: sim,
@@ -994,9 +1028,23 @@ function specificName(style){
 var MODEL_NAME = { quadratic: 'Quadratic 1:1' };
 
 // value with its standard error, the error kept visually subordinate
+// Quote the error to one significant figure and round the value to that same
+// place: nothing is printed more precisely than the fit can support. 493 +- 21
+// becomes 490 +- 20, not 493 +- 21.4. Only genuinely out-of-scale numbers fall
+// back to the exponent form - the unit selector is what keeps the rest legible.
 function pm(v, se){
   if (se === null || se === undefined || !isFinite(se) || se <= 0) return fmt(v, 3);
-  return fmt(v, 3) + '<span class="se"> ± ' + fmt(se, 2) + '</span>';
+  var seR = parseFloat(Number(se).toPrecision(1));
+  var a = Math.abs(v), e = Math.floor(Math.log10(seR));
+  // out of scale for plain decimals, or an error so small that matching its
+  // place would print a row of zeros - either way, use the exponent form
+  if (!isFinite(seR) || seR <= 0 || a >= 1e6 || (a > 0 && a < 1e-3) || e < -6){
+    return fmt(v, 3) + '<span class="se"> ± ' + fmt(seR, 1) + '</span>';
+  }
+  var step = Math.pow(10, e);                     // place of the error's one digit
+  var vR = Math.round(v / step) * step;
+  var d = Math.min(6, Math.max(0, -e));
+  return vR.toFixed(d) + '<span class="se"> ± ' + seR.toFixed(d) + '</span>';
 }
 
 function renderResults(){
@@ -1131,6 +1179,7 @@ function renderScenarios(){
       var sc = SCENARIOS.filter(function(x){ return x.key === btn.getAttribute('data-scn'); })[0];
       sc.apply();
       state.preset = sc.key;
+      reseed();
       renderAll();
     });
   });
@@ -1172,6 +1221,7 @@ function renderLigands(){
       var i = +btn.getAttribute('data-cp'), A = state.ligands[0], L = state.ligands[i];
       ['pt','kd','n','min','max','reps','sd'].forEach(function(f){ L[f] = A[f]; });
       touched();
+      reseed();
       renderAll();
     });
   });
@@ -1179,12 +1229,13 @@ function renderLigands(){
   host.querySelectorAll('input').forEach(function(el){
     el.addEventListener('input', function(){
       var i = +el.getAttribute('data-i'), f = el.getAttribute('data-f'), L = state.ligands[i];
-      if (f === 'on'){ L.on = el.checked; renderAll(); return; }
+      if (f === 'on'){ L.on = el.checked; reseed(); renderAll(); return; }
       if (f === 'name'){ L.name = el.value || ('Ligand ' + 'ABC'[i]); redraw(); return; }
       if (f === 'n') L.n = Math.max(0.2, Math.min(6, parseFloat(el.value) || 1));
       else if (f === 'reps') L.reps = Math.max(1, Math.min(12, Math.round(parseFloat(el.value) || 1)));
       else L[f] = parseFloat(el.value);
       touched();
+      reseed();
       redraw();
     });
   });
@@ -1260,15 +1311,22 @@ document.getElementById('npts').addEventListener('input', function(){
   var n = clampInt(parseFloat(this.value), NPTS_MIN, NPTS_MAX, NaN);
   if (!isFinite(n) || n !== Math.round(parseFloat(this.value))) return;
   state.points = n;
-  touched(); redraw();
+  touched(); reseed(); redraw();
 });
 document.getElementById('npts').addEventListener('blur', function(){
   var n = clampInt(parseFloat(this.value), NPTS_MIN, NPTS_MAX, state.points);
   this.value = n;
   if (n === state.points) return;
   state.points = n;
-  touched(); redraw();
+  touched(); reseed(); redraw();
 });
+// Repeat the experiment: same settings, a new draw of the noise.
+document.getElementById('resim').addEventListener('click', function(){
+  reseed();
+  redraw();
+  said('resimulated');
+});
+
 document.getElementById('scaleLog').addEventListener('click', function(){ state.scale = 'log'; redraw(); });
 document.getElementById('scaleLin').addEventListener('click', function(){ state.scale = 'linear'; redraw(); });
 
