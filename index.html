@@ -926,7 +926,9 @@ function draw(){
   // state started.
   var pw = -1, ph = -1;
   for (var pass = 0; pass < 6 && (W !== pw || H !== ph); pass++){ pw = W; ph = H; sizePlot(); }
-  var c = cache, d = c.d, s = '', i;
+  // A linear axis reads as a share of the total added, so it starts at zero
+  // whatever the lowest point is; a log axis cannot, and keeps the data range.
+  var c = cache, d = state.scale === 'log' ? c.d : [0, c.d[1]], s = '', i;
   var ay = H - M.b;
   // draw C first and A last, so ligand A sits in front
   var back = c.groups.slice().reverse();
