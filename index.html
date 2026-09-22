@@ -439,7 +439,7 @@ footer a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-ra
   <li><b>Noise SD</b> — standard deviation of the Gaussian error added to each replicate, in fraction bound.</li>
   <li><b>K<sub>d</sub></b> — the true dissociation constant the data were simulated from.</li>
   <li><b>EC<sub>50</sub></b> — the true midpoint, K<sub>d</sub> + n·[P]<sub>T</sub>/2. From the settings, not the data, so it has no error.</li>
-  <li><b>f at [L]<sub>max</sub></b> — measured fraction bound at the top of the titration: the replicate mean there, ± its standard error.</li>
+  <li><b>f at [L]<sub>max</sub></b> — the true fraction bound at the top of the titration: how far up the curve the experiment is designed to reach.</li>
   <li><b>K<sub>d</sub> fit</b> — the dissociation constant the model returns.</li>
   <li><b>K fit</b> — the Hill model's raw constant, in concentration<sup>n</sup>; shown only while <em>n</em> is fitted, when its K<sub>d</sub> is K<sup>1/n</sup>.</li>
   <li><b>Hill n</b> — the cooperativity the fit recovered.</li>
@@ -1191,18 +1191,16 @@ function renderResults(){
     var pick = function(model){
       return g.fits.filter(function(f){ return f.model === model; })[0];
     };
-    // Measured, not modelled: the replicate mean at the top concentration,
-    // carrying the standard error of that mean - SD over the root of the
-    // replicate count - so it tightens as replicates are added.
-    var top = g.sim.pts[g.sim.pts.length - 1];
-    var reps = Math.max(1, Math.round(num(g.L.reps, 3)));
-    // noise-free replicates agree exactly; do not dress the float dust up as an error
-    var seTop = (top && top.sd > 1e-12 && reps > 1) ? top.sd / Math.sqrt(reps) : null;
+    // Noise-free, like the K_d and EC50 beside it: the occupancy the true
+    // parameters give at the top of the titration. It answers a design
+    // question - does this titration reach saturation - so it should not
+    // wander with the noise.
+    var fTop = boundFrac(Math.max(0, num(g.L.pt, 0)), g.sim.hi, g.L.kd, g.L.n);
     var rows = '<tr><td><span class="nm"><b class="dot" style="background:' + col(g.idx % 3) +
       '"></b>' + esc(g.name) + '</span></td>' +
       '<td>' + fmt(num(g.L.kd, NaN), 3) + '</td>' +
       '<td>' + fmt(g.mid, 3) + '</td>' +
-      '<td>' + (top ? pm(top.mean, seTop) : '\u2014') + '</td>';
+      '<td>' + fmt(fTop, 3) + '</td>';
     var sp = pick('specific');
     if (state.fitSpecific && sp){
       if (showHalf) rows += '<td class="gl">' + (sp.fittedN ? pm(sp.K, sp.seK) : '\u2014') + '</td>';
