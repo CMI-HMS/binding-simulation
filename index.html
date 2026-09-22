@@ -9,7 +9,7 @@
   img{max-width:100%}
   [hidden]{display:none!important}
 </style>
-<title>Equilibrium Binding Simulation</title>
+<title>Equilibrium Binding Simulator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -30,6 +30,7 @@
   --s2:#eb6834;
   --s3:#1baf7a;
   --field:#FFFFFF;
+  --on:#4C5856;
   --shadow:0 1px 2px rgba(16,22,21,.05);
   --sans:"Archivo",-apple-system,"Segoe UI",Roboto,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
@@ -40,7 +41,7 @@
     --ink:#F1F4F3; --ink-2:#A9B4B2; --muted:#7E8987;
     --line:#272E2D; --line-2:#343C3B; --grid:#2F3735; --axis:#6A7472; --tick:#B8C2C0;
     --s1:#3987e5; --s2:#d95926; --s3:#199e70;
-    --field:#101514; --shadow:0 1px 2px rgba(0,0,0,.35);
+    --field:#101514; --on:#C7D0CE; --shadow:0 1px 2px rgba(0,0,0,.35);
   }
 }
 :root[data-theme="dark"]{
@@ -48,7 +49,7 @@
   --ink:#F1F4F3; --ink-2:#A9B4B2; --muted:#7E8987;
   --line:#272E2D; --line-2:#343C3B; --grid:#2F3735; --axis:#6A7472; --tick:#B8C2C0;
   --s1:#3987e5; --s2:#d95926; --s3:#199e70;
-  --field:#101514; --shadow:0 1px 2px rgba(0,0,0,.35);
+  --field:#101514; --on:#C7D0CE; --shadow:0 1px 2px rgba(0,0,0,.35);
 }
 
 *{box-sizing:border-box}
@@ -102,7 +103,7 @@ header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 18px;
   display:flex;align-items:center}
 .scn:hover{border-color:var(--ink-2)}
 .scn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.scn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--plane)}
+.scn[aria-pressed="true"]{background:var(--on);border-color:var(--on);color:var(--surface)}
 
 /* form controls */
 label{display:block;font-size:11px;line-height:1.3;color:var(--ink-2);margin-bottom:1px}
@@ -135,7 +136,7 @@ input:focus,select:focus{outline:2px solid var(--ink);outline-offset:-1px;border
 /* model checkboxes */
 .chk{display:flex;align-items:flex-start;gap:7px;font-size:12.5px;color:var(--ink);
   margin-bottom:3px;cursor:pointer}
-.chk input{width:15px;height:15px;margin:2px 0 0;accent-color:var(--ink);flex:none;cursor:pointer}
+.chk input{width:15px;height:15px;margin:2px 0 0;accent-color:var(--on);flex:none;cursor:pointer}
 .chk .sub{display:block;font-size:10.5px;color:var(--muted);line-height:1.35}
 /* The two model controls sit on their own row above the table, each one
    holding its place whether or not that model is checked - unchecking a
@@ -151,7 +152,7 @@ input:focus,select:focus{outline:2px solid var(--ink);outline-offset:-1px;border
   border-radius:7px;padding:2px;width:max-content}
 .hillrow button{font:inherit;font-size:10.5px;color:var(--ink-2);background:none;border:0;
   border-radius:5px;padding:3px 7px;cursor:pointer}
-.hillrow button[aria-pressed="true"]{background:var(--ink);color:var(--plane)}
+.hillrow button[aria-pressed="true"]{background:var(--on);color:var(--surface)}
 .hillrow button:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
 
 /* ligand cards */
@@ -172,7 +173,7 @@ input:focus,select:focus{outline:2px solid var(--ink);outline-offset:-1px;border
   position:relative;transition:background .12s}
 .sw span::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;
   border-radius:50%;background:var(--surface);transition:transform .12s}
-.sw input:checked + span{background:var(--ink)}
+.sw input:checked + span{background:var(--on)}
 .sw input:checked + span::after{transform:translateX(14px)}
 .sw input:focus-visible + span{outline:2px solid var(--ink);outline-offset:2px}
 .cpy{font:inherit;font-size:10.5px;color:var(--ink-2);background:var(--surface);flex:none;
@@ -195,7 +196,7 @@ input:focus,select:focus{outline:2px solid var(--ink);outline-offset:-1px;border
   border-radius:7px;padding:2px}
 .scaletog button{font:inherit;font-size:12.5px;font-weight:500;color:var(--ink-2);background:none;
   border:0;border-radius:5px;padding:3px 10px;cursor:pointer}
-.scaletog button[aria-pressed="true"]{background:var(--ink);color:var(--plane)}
+.scaletog button[aria-pressed="true"]{background:var(--on);color:var(--surface)}
 .scaletog button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 /* centred, so the width the 2:1 cap gives back reads as margin either side */
 svg.plot{display:block;width:100%;height:auto;margin-inline:auto}
@@ -315,7 +316,7 @@ footer a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-ra
 <body>
 <div class="wrap">
   <header>
-    <h1>Equilibrium Binding Simulation</h1>
+    <h1>Equilibrium Binding Simulator</h1>
     <p class="deck">Choose a scenario or build your own to simulate a binding experiment, then fit it with the <b>specific binding model</b> and/or the <b>quadratic 1:1 model</b>.</p>
   </header>
 
